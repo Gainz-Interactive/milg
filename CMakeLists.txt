@@ -17,7 +17,9 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
   GIT_TAG release-2.30.6
   GIT_SHALLOW TRUE
-  GIT_PROGRESS TRUE)
+  GIT_PROGRESS TRUE
+  FIND_PACKAGE_ARGS NAMES SDL2
+)
 
 FetchContent_Declare(
   volk
