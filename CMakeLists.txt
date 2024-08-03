@@ -14,21 +14,21 @@ set(SDL_TEST FALSE CACHE BOOL "Build the SDL2_test library")
 set(SDL2_DISABLE_INSTALL TRUE CACHE BOOL "Disable installation of SDL2")
 FetchContent_Declare(
   sdl
-  GIT_REPOSITORY https://github.com/libsdl-org/SDL
+  GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
   GIT_TAG release-2.30.5
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE)
 
 FetchContent_Declare(
   volk
-  GIT_REPOSITORY https://github.com/zeux/volk
+  GIT_REPOSITORY https://github.com/zeux/volk.git
   GIT_TAG 1.3.270
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE)
 
 FetchContent_Declare(
     imgui
-    GIT_REPOSITORY https://github.com/ocornut/imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
     GIT_TAG 527b2c45af2f8964f95826bd16ab7c7ed372ae41
     GIT_PROGRESS TRUE)
 
