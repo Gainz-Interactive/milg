@@ -32,7 +32,16 @@ FetchContent_Declare(
     GIT_TAG 527b2c45af2f8964f95826bd16ab7c7ed372ae41
     GIT_PROGRESS TRUE)
 
-FetchContent_MakeAvailable(sdl volk imgui)
+FetchContent_Declare(
+  VulkanUtilityLibraries
+  GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git
+  GIT_TAG v1.3.285
+  GIT_SHALLOW TRUE
+  GIT_PROGRESS TRUE
+  FIND_PACKAGE_ARGS
+)
+
+FetchContent_MakeAvailable(sdl volk imgui VulkanUtilityLibraries)
 
 set(TARGET_NAME milg)
 set(
@@ -50,4 +59,9 @@ set(
 add_executable(${TARGET_NAME} ${SOURCE_FILES})
 target_compile_definitions(${TARGET_NAME} PRIVATE IMGUI_IMPL_VULKAN_USE_VOLK)
 target_include_directories(${TARGET_NAME} PRIVATE ${imgui_SOURCE_DIR})
-target_link_libraries(${TARGET_NAME} PRIVATE SDL2::SDL2 volk::volk)
+target_link_libraries(
+    ${TARGET_NAME} PRIVATE
+    SDL2::SDL2
+    volk::volk
+    Vulkan::UtilityHeaders
+)
