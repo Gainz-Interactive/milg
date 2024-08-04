@@ -18,6 +18,9 @@ namespace milg::audio {
         Sound &operator=(Sound &&) = default;
 
         void play();
+
+        float get_volume();
+        void set_volume(float volume);
     private:
         ma_sound sound;
     };
