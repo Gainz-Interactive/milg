@@ -1,6 +1,7 @@
 #include "window.hpp"
 #include "event.hpp"
 #include "events.hpp"
+#include "logging.hpp"
 #include "vk_context.hpp"
 
 #include <SDL_events.h>
@@ -13,13 +14,16 @@
 
 namespace milg {
     std::unique_ptr<Window> Window::create(const WindowCreateInfo &info) {
+        MILG_INFO("Creating window: {}x{}", info.width, info.height);
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
+            MILG_CRITICAL("Failed to initialize SDL: {}", SDL_GetError());
             return nullptr;
         }
 
         SDL_Window *sdl_window = SDL_CreateWindow(info.title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                                   info.width, info.height, SDL_WINDOW_VULKAN);
         if (sdl_window == nullptr) {
+            MILG_CRITICAL("Failed to create window: {}", SDL_GetError());
             return nullptr;
         }
 

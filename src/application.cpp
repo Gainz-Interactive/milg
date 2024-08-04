@@ -12,7 +12,6 @@
 namespace milg {
     Application *Application::s_instance = nullptr;
 
-    uint32_t version = volkGetInstanceVersion();
     Application::Application(const WindowCreateInfo &window_create_info) {
         Application::s_instance = this;
 

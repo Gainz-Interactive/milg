@@ -1,4 +1,5 @@
 #include "vk_context.hpp"
+#include "logging.hpp"
 #include "window.hpp"
 
 #define VOLK_IMPLEMENTATION
@@ -11,6 +12,7 @@ const std::vector<const char *> requested_device_layers   = {"VK_LAYER_KHRONOS_v
 
 namespace milg {
     std::shared_ptr<VulkanContext> VulkanContext::create(const std::unique_ptr<Window> &window) {
+        MILG_INFO("Creating Vulkan context");
         VK_CHECK(volkInitialize());
 
         const VkApplicationInfo app_info = {
@@ -65,10 +67,15 @@ namespace milg {
         }
 
         if (preferred_device == VK_NULL_HANDLE && fallback_device == VK_NULL_HANDLE) {
-            std::printf("No suitable physical device found\n");
+            MILG_CRITICAL("No suitable physical device found");
+            return nullptr;
         }
 
         VkPhysicalDevice physical_device = preferred_device != VK_NULL_HANDLE ? preferred_device : fallback_device;
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(physical_device, &properties);
+        MILG_INFO("Using physical device: {}", properties.deviceName);
+
         std::vector<const char *> requested_device_extensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         };
