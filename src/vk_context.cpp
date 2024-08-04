@@ -25,12 +25,46 @@ namespace milg {
             .apiVersion         = VK_API_VERSION_1_3,
         };
 
-        std::vector<const char *> requested_instance_extensions = {};
+        std::vector<const char *> requested_instance_extensions = {
+            VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+        };
         window->get_instance_extensions(requested_instance_extensions);
+
+        auto debug_callback = [](VkDebugUtilsMessageSeverityFlagBitsEXT      message_severity,
+                                 VkDebugUtilsMessageTypeFlagsEXT             message_type,
+                                 const VkDebugUtilsMessengerCallbackDataEXT *callback_data, void *user_data) {
+            switch (message_severity) {
+            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+                MILG_INFO("{}", callback_data->pMessage);
+                break;
+            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+                MILG_WARN("{}", callback_data->pMessage);
+                break;
+            case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+                MILG_ERROR("{}", callback_data->pMessage);
+                break;
+            default:
+                break;
+            }
+            return VK_FALSE;
+        };
+
+        VkDebugUtilsMessengerCreateInfoEXT debug_messenger_info = {
+            .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+            .pNext = nullptr,
+            .flags = 0,
+            .messageSeverity =
+                VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+            .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+            .pfnUserCallback = debug_callback,
+            .pUserData       = nullptr,
+        };
 
         const VkInstanceCreateInfo instance_info = {
             .sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-            .pNext                   = nullptr,
+            .pNext                   = &debug_messenger_info,
             .flags                   = 0,
             .pApplicationInfo        = &app_info,
             .enabledLayerCount       = static_cast<uint32_t>(requested_instance_layers.size()),
@@ -42,6 +76,9 @@ namespace milg {
         VkInstance instance;
         VK_CHECK(vkCreateInstance(&instance_info, nullptr, &instance));
         volkLoadInstanceOnly(instance);
+
+        VkDebugUtilsMessengerEXT debug_messenger;
+        VK_CHECK(vkCreateDebugUtilsMessengerEXT(instance, &debug_messenger_info, nullptr, &debug_messenger));
 
         uint32_t physical_device_count = 0u;
         VK_CHECK(vkEnumeratePhysicalDevices(instance, &physical_device_count, nullptr));
@@ -147,12 +184,14 @@ namespace milg {
         context->m_device                      = device;
         context->m_device_table                = device_table;
         context->m_graphics_queue_family_index = queue_family_index;
+        context->m_debug_messenger             = debug_messenger;
 
         return context;
-    }
+    } // namespace milg
 
     VulkanContext::~VulkanContext() {
         m_device_table.vkDestroyDevice(m_device, nullptr);
+        vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger, nullptr);
         vkDestroyInstance(m_instance, nullptr);
     }
 

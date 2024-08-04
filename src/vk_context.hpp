@@ -33,10 +33,11 @@ namespace milg {
     private:
         VulkanContext() = default;
 
-        VkInstance       m_instance                    = VK_NULL_HANDLE;
-        VkPhysicalDevice m_physical_device             = VK_NULL_HANDLE;
-        VkDevice         m_device                      = VK_NULL_HANDLE;
-        VolkDeviceTable  m_device_table                = {};
-        uint32_t         m_graphics_queue_family_index = 0;
+        VkInstance               m_instance                    = VK_NULL_HANDLE;
+        VkPhysicalDevice         m_physical_device             = VK_NULL_HANDLE;
+        VkDevice                 m_device                      = VK_NULL_HANDLE;
+        VolkDeviceTable          m_device_table                = {};
+        uint32_t                 m_graphics_queue_family_index = 0;
+        VkDebugUtilsMessengerEXT m_debug_messenger             = VK_NULL_HANDLE;
     };
 } // namespace milg
