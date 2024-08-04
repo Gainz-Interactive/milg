@@ -98,8 +98,8 @@ void init() {
 }
 
 void destroy() {
-    ma_engine_uninit(&engine);
     SDL_CloseAudioDevice(device);
+    ma_engine_uninit(&engine);
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
 
