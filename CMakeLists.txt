@@ -47,6 +47,10 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(sdl volk imgui VulkanUtilityLibraries)
 
+find_package(Vulkan)
+
+add_subdirectory(data)
+
 set(TARGET_NAME milg)
 set(
     SOURCE_FILES
@@ -66,6 +70,7 @@ set(
 )
 
 add_executable(${TARGET_NAME} ${SOURCE_FILES})
+add_dependencies(${TARGET_NAME} shaders)
 target_compile_definitions(${TARGET_NAME} PRIVATE IMGUI_IMPL_VULKAN_USE_VOLK)
 target_include_directories(${TARGET_NAME} PRIVATE ${imgui_SOURCE_DIR})
 target_link_libraries(
