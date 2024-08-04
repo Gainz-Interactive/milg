@@ -3,6 +3,8 @@ set(SHADER_SOURCES
     "shaders/triangle.vert"
 )
 
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/shaders")
+
 foreach(SHADER IN LISTS SHADER_SOURCES)
     get_filename_component(FILENAME ${SHADER} NAME)
     add_custom_command(
