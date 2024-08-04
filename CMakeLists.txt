@@ -51,6 +51,11 @@ set(TARGET_NAME milg)
 set(
     SOURCE_FILES
     "src/main.cpp"
+    "src/window.cpp"
+    "src/application.cpp"
+    "src/layer.cpp"
+    "src/vk_context.cpp"
+    "src/swapchain.cpp"
     "${imgui_SOURCE_DIR}/imgui.cpp"
     "${imgui_SOURCE_DIR}/imgui_draw.cpp"
     "${imgui_SOURCE_DIR}/imgui_demo.cpp"
