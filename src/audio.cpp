@@ -85,4 +85,12 @@ void destroy() {
     SDL_CloseAudioDevice(device);
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
 }
+
+float get_volume() {
+    return ma_engine_get_volume(&engine);
+}
+
+void set_volume(float volume) {
+    ma_engine_set_volume(&engine, volume);
+}
 }

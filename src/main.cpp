@@ -511,6 +511,11 @@ public:
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Audio")) {
+                auto volume = audio::get_volume();
+
+                if (ImGui::SliderFloat("Master volume", &volume, 0.f, 1.f)) {
+                    audio::set_volume(volume);
+                }
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
