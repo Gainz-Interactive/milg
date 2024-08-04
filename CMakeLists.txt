@@ -79,6 +79,7 @@ set(
     "src/vk_context.cpp"
     "src/swapchain.cpp"
     "src/logging.cpp"
+    "src/imgui_layer.cpp"
     "${imgui_SOURCE_DIR}/imgui.cpp"
     "${imgui_SOURCE_DIR}/imgui_draw.cpp"
     "${imgui_SOURCE_DIR}/imgui_demo.cpp"

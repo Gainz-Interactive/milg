@@ -6,6 +6,7 @@
 
 #include <SDL_events.h>
 #include <SDL_video.h>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -20,8 +21,12 @@ namespace milg {
             return nullptr;
         }
 
+        uint32_t flags = SDL_WINDOW_VULKAN;
+        if (info.resizable) {
+            flags |= SDL_WINDOW_RESIZABLE;
+        }
         SDL_Window *sdl_window = SDL_CreateWindow(info.title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                                  info.width, info.height, SDL_WINDOW_VULKAN);
+                                                  info.width, info.height, flags);
         if (sdl_window == nullptr) {
             MILG_CRITICAL("Failed to create window: {}", SDL_GetError());
             return nullptr;
@@ -110,11 +115,13 @@ namespace milg {
                 break;
             }
 
-            case SDL_WINDOWEVENT_RESIZED: {
-                WindowResizeEvent window_resize_event(event.window.data1, event.window.data2);
-                m_width  = event.window.data1;
-                m_height = event.window.data2;
-                m_event_callback(window_resize_event);
+            case SDL_WINDOWEVENT: {
+                if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    WindowResizeEvent window_resize_event(event.window.data1, event.window.data2);
+                    m_width  = event.window.data1;
+                    m_height = event.window.data2;
+                    m_event_callback(window_resize_event);
+                }
                 break;
             }
             }

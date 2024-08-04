@@ -1,6 +1,8 @@
 #include "vk_context.hpp"
 #include "logging.hpp"
 #include "window.hpp"
+#include <cstdint>
+#include <vulkan/vulkan_core.h>
 
 #define VOLK_IMPLEMENTATION
 #include <volk.h>
@@ -178,6 +180,12 @@ namespace milg {
         VolkDeviceTable device_table;
         volkLoadDeviceTable(&device_table, device);
 
+        VkQueue graphics_queue;
+        device_table.vkGetDeviceQueue(device, queue_family_index, 0, &graphics_queue);
+
+        VkPhysicalDeviceMemoryProperties memory_properties;
+        vkGetPhysicalDeviceMemoryProperties(physical_device, &memory_properties);
+
         auto context                           = std::shared_ptr<VulkanContext>(new VulkanContext());
         context->m_instance                    = instance;
         context->m_physical_device             = physical_device;
@@ -185,6 +193,8 @@ namespace milg {
         context->m_device_table                = device_table;
         context->m_graphics_queue_family_index = queue_family_index;
         context->m_debug_messenger             = debug_messenger;
+        context->m_graphics_queue              = graphics_queue;
+        context->m_memory_properties           = memory_properties;
 
         return context;
     } // namespace milg
@@ -213,5 +223,57 @@ namespace milg {
 
     uint32_t VulkanContext::graphics_queue_family_index() const {
         return m_graphics_queue_family_index;
+    }
+
+    VkQueue VulkanContext::graphics_queue() const {
+        return m_graphics_queue;
+    }
+
+    uint32_t VulkanContext::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
+        for (uint32_t i = 0; i < m_memory_properties.memoryTypeCount; i++) {
+            if ((type_filter & (1 << i)) &&
+                (m_memory_properties.memoryTypes[i].propertyFlags & properties) == properties) {
+                return i;
+            }
+        }
+
+        return UINT32_MAX;
+    }
+
+    void VulkanContext::transition_image_layout(VkCommandBuffer command_buffer, VkImage image, VkFormat format,
+                                                VkImageLayout old_layout, VkImageLayout new_layout) const {
+        VkImageMemoryBarrier2 image_barrier = {
+            .sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
+            .pNext               = nullptr,
+            .srcStageMask        = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+            .srcAccessMask       = VK_ACCESS_2_MEMORY_WRITE_BIT,
+            .dstStageMask        = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT,
+            .dstAccessMask       = VK_ACCESS_2_MEMORY_READ_BIT | VK_ACCESS_2_MEMORY_WRITE_BIT,
+            .oldLayout           = old_layout,
+            .newLayout           = new_layout,
+            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+            .image               = image,
+            .subresourceRange    = {.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+                                    .baseMipLevel   = 0,
+                                    .levelCount     = 1,
+                                    .baseArrayLayer = 0,
+                                    .layerCount     = 1},
+
+        };
+
+        VkDependencyInfo dependency_info = {
+            .sType                    = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
+            .pNext                    = nullptr,
+            .dependencyFlags          = VK_DEPENDENCY_BY_REGION_BIT,
+            .memoryBarrierCount       = 0,
+            .pMemoryBarriers          = nullptr,
+            .bufferMemoryBarrierCount = 0,
+            .pBufferMemoryBarriers    = nullptr,
+            .imageMemoryBarrierCount  = 1,
+            .pImageMemoryBarriers     = &image_barrier,
+        };
+
+        vkCmdPipelineBarrier2(command_buffer, &dependency_info);
     }
 } // namespace milg

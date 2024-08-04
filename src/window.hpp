@@ -9,9 +9,10 @@ struct SDL_Window;
 
 namespace milg {
     struct WindowCreateInfo {
-        std::string title  = "Untitled";
-        int         width  = 800;
-        int         height = 600;
+        std::string title     = "Untitled";
+        int         width     = 800;
+        int         height    = 600;
+        bool        resizable = false;
     };
 
     struct Window {
