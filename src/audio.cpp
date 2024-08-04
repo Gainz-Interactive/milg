@@ -39,6 +39,14 @@ void Sound::play() {
     ma_sound_start(&this->sound);
 }
 
+float Sound::get_volume() {
+    return ma_sound_get_volume(&this->sound);
+}
+
+void Sound::set_volume(float volume) {
+    ma_sound_set_volume(&this->sound, volume);
+}
+
 void init() {
     auto engine_cfg = ma_engine_config_init();
 
