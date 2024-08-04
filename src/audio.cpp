@@ -1,4 +1,5 @@
 #include "audio.hpp"
+#include "logging.hpp"
 
 #ifndef MA_NO_DEVICE_IO
 #define MA_NO_DEVICE_IO
@@ -45,9 +46,13 @@ void init() {
     engine_cfg.sampleRate = 44100;
     engine_cfg.noDevice = MA_TRUE;
 
+    MILG_DEBUG("Initializing multiaudio engine…");
+
     if (ma_engine_init(&engine_cfg, &engine) != MA_SUCCESS) {
         throw std::runtime_error("Audio engine initialization failed");
     }
+
+    MILG_DEBUG("Initializing SDL audio subsystem…");
 
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0) {
         ma_engine_uninit(&engine);
@@ -68,6 +73,8 @@ void init() {
         },
     };
 
+    MILG_DEBUG("Opening SDL audio device…");
+
     device = SDL_OpenAudioDevice(NULL, 0, &spec, NULL, SDL_AUDIO_ALLOW_ANY_CHANGE);
     if (device == 0)
     {
@@ -76,6 +83,8 @@ void init() {
 
         throw std::runtime_error("SDL audio device opening failed");
     }
+
+    MILG_DEBUG("Unpausing SDL audio device…");
 
     SDL_PauseAudioDevice(device, 0);
 }
