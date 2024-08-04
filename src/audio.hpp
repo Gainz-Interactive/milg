@@ -24,4 +24,7 @@ namespace milg::audio {
 
     void init();
     void destroy();
+
+    float get_volume();
+    void set_volume(float volume);
 }
