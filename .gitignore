@@ -1,6 +1,7 @@
 .cache
 .zed
 
+*.spv
 imgui.ini
 
 build/
