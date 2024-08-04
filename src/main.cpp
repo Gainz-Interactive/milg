@@ -511,11 +511,37 @@ public:
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Audio")) {
-                auto volume = audio::get_volume();
+                auto master_volume = audio::get_volume();
 
-                if (ImGui::SliderFloat("Master volume", &volume, 0.f, 1.f)) {
-                    audio::set_volume(volume);
+                if (ImGui::SliderFloat("Master volume", &master_volume, 0.f, 1.f)) {
+                    audio::set_volume(master_volume);
                 }
+
+                ImGui::SeparatorText("Loaded sounds");
+
+                int i = 0;
+                static int selected_index = 0;
+
+                for (auto &[key, sound] : sounds) {
+                    bool selected = selected_index == i;
+                    auto volume = sound.get_volume();
+
+                    if (ImGui::Button(std::format("Play##{}", key).c_str())) {
+                        sound.play();
+                    }
+                    ImGui::SameLine();
+                    ImGui::PushItemWidth(100);
+                    if (ImGui::SliderFloat(std::format("##vol_{}", key).c_str(), &volume, 0.f, 1.f)) {
+                        sound.set_volume(volume);
+                    }
+                    ImGui::SameLine();
+                    if (ImGui::Selectable(key.c_str(), selected)) {
+                        selected_index = i;
+                    }
+
+                    i++;
+                }
+
                 ImGui::EndTabItem();
             }
             ImGui::EndTabBar();
@@ -649,9 +675,6 @@ public:
 
     bool on_key_released(KeyReleasedEvent &event) {
         MILG_INFO("Key released: {}", event.key_code());
-        if (auto sound = sounds.find("garsas"); sound != sounds.end()) {
-            sound->second.play();
-        }
 
         return false;
     }
@@ -685,7 +708,8 @@ int main(int argc, char **argv) {
 
     Milglication app(window_info);
 
-    sounds.emplace("garsas", "data/c1a0_sci_dis10a.wav");
+    sounds.emplace("c1a0_sci_dis1d", "data/c1a0_sci_dis1d.wav");
+    sounds.emplace("c1a0_sci_dis10a", "data/c1a0_sci_dis10a.wav");
 
     app.run();
 
