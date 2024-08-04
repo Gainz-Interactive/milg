@@ -566,12 +566,12 @@ public:
         };
         context->device_table().vkCmdBeginRendering(command_buffers[image_index], &rendering_info);
 
-        const VkRect2D   scissor  = {{0, 0}, {800, 600}};
+        const VkRect2D   scissor  = {{0, 0}, swapchain->extent()};
         const VkViewport viewport = {
             .x        = 0.0f,
             .y        = 0.0f,
-            .width    = 800.0f,
-            .height   = 600.0f,
+            .width    = (float)swapchain->extent().width,
+            .height   = (float)swapchain->extent().height,
             .minDepth = 0.0f,
             .maxDepth = 1.0f,
         };
