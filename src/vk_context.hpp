@@ -29,15 +29,22 @@ namespace milg {
         VkDevice               device() const;
         const VolkDeviceTable &device_table() const;
         uint32_t               graphics_queue_family_index() const;
+        VkQueue                graphics_queue() const;
+
+        uint32_t find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const;
+        void     transition_image_layout(VkCommandBuffer command_buffer, VkImage image, VkFormat format,
+                                         VkImageLayout old_layout, VkImageLayout new_layout) const;
 
     private:
         VulkanContext() = default;
 
-        VkInstance               m_instance                    = VK_NULL_HANDLE;
-        VkPhysicalDevice         m_physical_device             = VK_NULL_HANDLE;
-        VkDevice                 m_device                      = VK_NULL_HANDLE;
-        VolkDeviceTable          m_device_table                = {};
-        uint32_t                 m_graphics_queue_family_index = 0;
-        VkDebugUtilsMessengerEXT m_debug_messenger             = VK_NULL_HANDLE;
+        VkInstance                       m_instance                    = VK_NULL_HANDLE;
+        VkPhysicalDevice                 m_physical_device             = VK_NULL_HANDLE;
+        VkPhysicalDeviceMemoryProperties m_memory_properties           = {};
+        VkDevice                         m_device                      = VK_NULL_HANDLE;
+        VolkDeviceTable                  m_device_table                = {};
+        uint32_t                         m_graphics_queue_family_index = 0;
+        VkDebugUtilsMessengerEXT         m_debug_messenger             = VK_NULL_HANDLE;
+        VkQueue                          m_graphics_queue              = VK_NULL_HANDLE;
     };
 } // namespace milg
