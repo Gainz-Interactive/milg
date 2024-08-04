@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <tuple>
 #include <vector>
@@ -13,6 +14,7 @@
 #include <imgui.h>
 
 #include "application.hpp"
+#include "audio.hpp"
 #include "event.hpp"
 #include "events.hpp"
 #include "layer.hpp"
@@ -23,6 +25,7 @@
 using namespace milg;
 
 static std::filesystem::path bindir;
+static std::map<std::string, audio::Sound> sounds;
 
 std::tuple<VkCommandPool, std::vector<VkCommandBuffer>>
 create_command_structures(const std::shared_ptr<VulkanContext> &context, size_t command_buffer_count) {
@@ -489,12 +492,21 @@ public:
         ImGui_ImplVulkan_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         ImGui::NewFrame();
-
         ImGui::Begin("Tryngle");
-        ImGui::ColorEdit3("Tint", push_constants.tint);
-        ImGui::SliderFloat("Size", &push_constants.size, 0.1f, 1.0f);
-        ImGui::End();
 
+        if (ImGui::BeginTabBar("milg")) {
+            if (ImGui::BeginTabItem("Triangle")) {
+                ImGui::ColorEdit3("Tint", push_constants.tint);
+                ImGui::SliderFloat("Size", &push_constants.size, 0.1f, 1.0f);
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Audio")) {
+                ImGui::EndTabItem();
+            }
+            ImGui::EndTabBar();
+        }
+
+        ImGui::End();
         ImGui::Render();
 
         context->device_table().vkWaitForFences(context->device(), 1, &frame_fences[frame_index], VK_TRUE, UINT64_MAX);
@@ -622,6 +634,9 @@ public:
 
     bool on_key_released(KeyReleasedEvent &event) {
         std::printf("released: %d\n", event.key_code());
+        if (auto sound = sounds.find("garsas"); sound != sounds.end()) {
+            sound->second.play();
+        }
 
         return false;
     }
@@ -653,6 +668,9 @@ int main(int argc, char **argv) {
     };
 
     Milglication app(window_info);
+
+    sounds.emplace("garsas", "data/c1a0_sci_dis10a.wav");
+
     app.run();
 
     return 0;

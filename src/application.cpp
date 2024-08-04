@@ -1,4 +1,5 @@
 #include "application.hpp"
+#include "audio.hpp"
 #include "event.hpp"
 #include "events.hpp"
 #include "layer.hpp"
@@ -22,10 +23,14 @@ namespace milg {
         m_window->set_event_callback([this](Event &event) {
             on_event(event);
         });
+
+        audio::init();
     }
 
     Application::~Application() {
         Application::s_instance = nullptr;
+
+        audio::destroy();
 
         for (auto layer : m_layers) {
             layer->on_detach();

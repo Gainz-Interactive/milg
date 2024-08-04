@@ -45,7 +45,15 @@ FetchContent_Declare(
   FIND_PACKAGE_ARGS
 )
 
-FetchContent_MakeAvailable(sdl volk imgui VulkanUtilityLibraries)
+FetchContent_Declare(
+    miniaudio
+    GIT_REPOSITORY https://github.com/mackron/miniaudio.git
+    GIT_TAG 0.11.21
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+
+FetchContent_MakeAvailable(sdl volk imgui VulkanUtilityLibraries miniaudio)
 
 find_package(Vulkan)
 
@@ -54,6 +62,8 @@ add_subdirectory(data)
 set(TARGET_NAME milg)
 set(
     SOURCE_FILES
+    "src/audio.hpp"
+    "src/audio.cpp"
     "src/main.cpp"
     "src/window.cpp"
     "src/application.cpp"
@@ -72,7 +82,10 @@ set(
 add_executable(${TARGET_NAME} ${SOURCE_FILES})
 add_dependencies(${TARGET_NAME} shaders)
 target_compile_definitions(${TARGET_NAME} PRIVATE IMGUI_IMPL_VULKAN_USE_VOLK)
-target_include_directories(${TARGET_NAME} PRIVATE ${imgui_SOURCE_DIR})
+target_include_directories(
+    ${TARGET_NAME}
+    PRIVATE ${imgui_SOURCE_DIR} ${miniaudio_SOURCE_DIR}
+)
 target_link_libraries(
     ${TARGET_NAME} PRIVATE
     SDL2::SDL2
