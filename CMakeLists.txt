@@ -53,7 +53,15 @@ FetchContent_Declare(
     GIT_PROGRESS TRUE
 )
 
-FetchContent_MakeAvailable(sdl volk imgui VulkanUtilityLibraries miniaudio)
+FetchContent_Declare(
+  spdlog
+  GIT_REPOSITORY https://github.com/gabime/spdlog.git
+  GIT_TAG v1.14.1
+  GIT_SHALLOW TRUE
+  GIT_PROGRESS TRUE
+)
+
+FetchContent_MakeAvailable(sdl volk imgui VulkanUtilityLibraries spdlog miniaudio)
 
 find_package(Vulkan)
 
@@ -70,6 +78,7 @@ set(
     "src/layer.cpp"
     "src/vk_context.cpp"
     "src/swapchain.cpp"
+    "src/logging.cpp"
     "${imgui_SOURCE_DIR}/imgui.cpp"
     "${imgui_SOURCE_DIR}/imgui_draw.cpp"
     "${imgui_SOURCE_DIR}/imgui_demo.cpp"
@@ -91,4 +100,5 @@ target_link_libraries(
     SDL2::SDL2
     volk::volk
     Vulkan::UtilityHeaders
+    spdlog::spdlog
 )

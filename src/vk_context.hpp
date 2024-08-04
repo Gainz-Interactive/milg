@@ -1,5 +1,7 @@
 #pragma once
 
+#include "logging.hpp"
+
 #include <cstdint>
 #include <memory>
 
@@ -10,7 +12,7 @@
     do {                                                                                                               \
         VkResult result = func;                                                                                        \
         if (result != VK_SUCCESS) {                                                                                    \
-            std::printf("%s:%d Vulkan error: \"%s\"", __FILE__, __LINE__, string_VkResult(result));                    \
+            MILG_ERROR("{}:{} Vulkan error: {}", __FILE__, __LINE__, string_VkResult(result));                         \
             std::exit(EXIT_FAILURE);                                                                                   \
         }                                                                                                              \
     } while (0)

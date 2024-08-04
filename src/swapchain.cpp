@@ -1,11 +1,12 @@
 #include "swapchain.hpp"
+#include "logging.hpp"
 
 #include "window.hpp"
 
 namespace milg {
     std::shared_ptr<Swapchain> Swapchain::create(const std::unique_ptr<Window>        &window,
                                                  const std::shared_ptr<VulkanContext> &context) {
-
+        MILG_INFO("Creating swapchain");
         VkSurfaceKHR surface = VK_NULL_HANDLE;
         window->get_swapchain_surface(context, &surface);
 
@@ -37,6 +38,13 @@ namespace milg {
             }
         }
 
+        MILG_INFO("Selected surface format: {}, colorspace: {}", string_VkFormat(surface_format.format),
+                  string_VkColorSpaceKHR(surface_format.colorSpace));
+
+        VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
+
+        MILG_INFO("Selected present mode: {}", string_VkPresentModeKHR(present_mode));
+
         VkExtent2D extent = {
             .width  = window->width(),
             .height = window->height(),
@@ -58,7 +66,7 @@ namespace milg {
             .pQueueFamilyIndices   = nullptr,
             .preTransform          = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
             .compositeAlpha        = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-            .presentMode           = VK_PRESENT_MODE_FIFO_KHR,
+            .presentMode           = present_mode,
             .clipped               = VK_TRUE,
             .oldSwapchain          = VK_NULL_HANDLE,
         };
@@ -118,7 +126,7 @@ namespace milg {
         swapchain->m_swapchain      = swapchain_handle;
         swapchain->m_surface        = surface;
         swapchain->m_surface_format = surface_format;
-        swapchain->m_present_mode   = VK_PRESENT_MODE_FIFO_KHR;
+        swapchain->m_present_mode   = present_mode;
         swapchain->m_extent         = extent;
         swapchain->m_images         = swapchain_images;
 

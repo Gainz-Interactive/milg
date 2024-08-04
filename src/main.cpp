@@ -18,17 +18,19 @@
 #include "event.hpp"
 #include "events.hpp"
 #include "layer.hpp"
+#include "logging.hpp"
 #include "swapchain.hpp"
 #include "vk_context.hpp"
 #include "window.hpp"
 
 using namespace milg;
 
-static std::filesystem::path bindir;
+static std::filesystem::path               bindir;
 static std::map<std::string, audio::Sound> sounds;
 
 std::tuple<VkCommandPool, std::vector<VkCommandBuffer>>
 create_command_structures(const std::shared_ptr<VulkanContext> &context, size_t command_buffer_count) {
+    MILG_INFO("Creating command structures");
     const VkCommandPoolCreateInfo command_pool_info = {
         .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
         .pNext            = nullptr,
@@ -57,6 +59,7 @@ create_command_structures(const std::shared_ptr<VulkanContext> &context, size_t 
 
 std::tuple<std::vector<VkSemaphore>, std::vector<VkSemaphore>>
 create_semaphores(const std::shared_ptr<VulkanContext> &context) {
+    MILG_INFO("Creating semaphores");
     std::vector<VkSemaphore> image_available_semaphores(2);
     std::vector<VkSemaphore> render_finished_semaphores(2);
 
@@ -77,6 +80,7 @@ create_semaphores(const std::shared_ptr<VulkanContext> &context) {
 }
 
 std::vector<VkFence> create_frame_fences(const std::shared_ptr<VulkanContext> &context) {
+    MILG_INFO("Creating frame fences");
     std::vector<VkFence> frame_fences(2);
     for (size_t i = 0; i < 2; ++i) {
         const VkFenceCreateInfo fence_info = {
@@ -121,6 +125,7 @@ void transition_image(VkImage image, VkImageLayout old_layout, VkImageLayout new
 }
 
 VkShaderModule load_shader_module(const std::filesystem::path &path, const std::shared_ptr<VulkanContext> &context) {
+    MILG_INFO("Loading shader module from file: {}", path.string());
     std::ifstream file(path);
     if (!file.is_open()) {
         file = std::ifstream(bindir / path);
@@ -148,6 +153,7 @@ VkShaderModule load_shader_module(const std::filesystem::path &path, const std::
 }
 
 VkDescriptorSetLayout create_descriptor_set_layout(const std::shared_ptr<VulkanContext> &context) {
+    MILG_INFO("Creating descriptor set layout");
     const VkDescriptorSetLayoutBinding layout_binding = {
         .binding            = 0,
         .descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
@@ -172,8 +178,7 @@ VkDescriptorSetLayout create_descriptor_set_layout(const std::shared_ptr<VulkanC
 }
 
 VkPipelineLayout create_pipeline_layout(const std::shared_ptr<VulkanContext> &context) {
-    std::printf("Creating Vulkan pipeline layout\n");
-
+    MILG_INFO("Creating pipeline layout");
     const VkPushConstantRange push_constant_range = {
         .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
         .offset     = 0,
@@ -200,6 +205,7 @@ VkPipelineLayout create_pipeline_layout(const std::shared_ptr<VulkanContext> &co
 VkPipeline create_graphics_pipeline(VkShaderModule vertex_shader_module, VkShaderModule fragment_shader_module,
                                     VkPipelineLayout pipeline_layout, VkFormat surface_format,
                                     const std::shared_ptr<VulkanContext> &context) {
+    MILG_INFO("Creating graphics pipeline");
     const VkPipelineRasterizationStateCreateInfo rasterizer_info = {
         .sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
         .pNext                   = nullptr,
@@ -354,6 +360,7 @@ VkPipeline create_graphics_pipeline(VkShaderModule vertex_shader_module, VkShade
 VkDescriptorPool initialize_imgui_context(const std::shared_ptr<Swapchain>     &swapchain,
                                           const std::unique_ptr<Window>        &window,
                                           const std::shared_ptr<VulkanContext> &context, VkQueue graphics_queue) {
+    MILG_INFO("Initializing ImGui context");
     ImGuiContext *imgui_context = ImGui::CreateContext();
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui_ImplSDL2_InitForVulkan(window->handle());
@@ -440,6 +447,7 @@ public:
     } push_constants;
 
     void on_attach() override {
+        MILG_INFO("Starting Milg");
         context         = Application::get().context();
         auto &swapchain = Application::get().swapchain();
 
@@ -466,6 +474,8 @@ public:
     }
 
     void on_detach() override {
+        MILG_INFO("Shutting down Milg");
+
         context->device_table().vkDeviceWaitIdle(context->device());
 
         ImGui_ImplVulkan_Shutdown();
@@ -627,13 +637,13 @@ public:
     }
 
     bool on_key_pressed(KeyPressedEvent &event) {
-        std::printf("pressed: %d\n", event.key_code());
+        MILG_INFO("Key pressed: {}", event.key_code());
 
         return false;
     }
 
     bool on_key_released(KeyReleasedEvent &event) {
-        std::printf("released: %d\n", event.key_code());
+        MILG_INFO("Key released: {}", event.key_code());
         if (auto sound = sounds.find("garsas"); sound != sounds.end()) {
             sound->second.play();
         }
@@ -660,6 +670,7 @@ public:
 
 int main(int argc, char **argv) {
     bindir = std::filesystem::path(argv[0]).parent_path();
+    Logging::init();
 
     WindowCreateInfo window_info = {
         .title  = "Milg",
