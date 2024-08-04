@@ -22,6 +22,8 @@
 
 using namespace milg;
 
+static std::filesystem::path bindir;
+
 std::tuple<VkCommandPool, std::vector<VkCommandBuffer>>
 create_command_structures(const std::shared_ptr<VulkanContext> &context, size_t command_buffer_count) {
     const VkCommandPoolCreateInfo command_pool_info = {
@@ -117,6 +119,9 @@ void transition_image(VkImage image, VkImageLayout old_layout, VkImageLayout new
 
 VkShaderModule load_shader_module(const std::filesystem::path &path, const std::shared_ptr<VulkanContext> &context) {
     std::ifstream file(path);
+    if (!file.is_open()) {
+        file = std::ifstream(bindir / path);
+    }
     if (!file.is_open()) {
         std::printf("Failed to open file\n");
         return VK_NULL_HANDLE;
@@ -638,7 +643,9 @@ public:
     }
 };
 
-int main() {
+int main(int argc, char **argv) {
+    bindir = std::filesystem::path(argv[0]).parent_path();
+
     WindowCreateInfo window_info = {
         .title  = "Milg",
         .width  = 800,
