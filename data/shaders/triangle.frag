@@ -10,5 +10,8 @@ layout(push_constant) uniform PushConstants {
 } constants;
 
 void main() {
-    out_color = vec4(in_color * constants.tint, 1.0f);
+    vec4 color = vec4(in_color * constants.tint, 1.0f);
+    color.rgb = pow(color.rgb, vec3(1.0f / 2.2f));
+
+    out_color = color;
 }

@@ -27,7 +27,7 @@ namespace milg {
             surface_format.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
         } else {
             for (const auto &format : formats) {
-                if (format.format == VK_FORMAT_B8G8R8A8_SRGB &&
+                if (format.format == VK_FORMAT_B8G8R8A8_UNORM &&
                     format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR) {
                     surface_format.format     = format.format;
                     surface_format.colorSpace = format.colorSpace;
