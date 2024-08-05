@@ -37,15 +37,6 @@ FetchContent_Declare(
 )
 
 FetchContent_Declare(
-  VulkanUtilityLibraries
-  GIT_REPOSITORY https://github.com/KhronosGroup/Vulkan-Utility-Libraries.git
-  GIT_TAG v1.3.285
-  GIT_SHALLOW TRUE
-  GIT_PROGRESS TRUE
-  FIND_PACKAGE_ARGS
-)
-
-FetchContent_Declare(
     miniaudio
     GIT_REPOSITORY https://github.com/mackron/miniaudio.git
     GIT_TAG 0.11.21
@@ -61,9 +52,10 @@ FetchContent_Declare(
   GIT_PROGRESS TRUE
 )
 
-FetchContent_MakeAvailable(sdl volk imgui VulkanUtilityLibraries spdlog miniaudio)
+FetchContent_MakeAvailable(sdl volk imgui spdlog miniaudio)
 
 find_package(Vulkan)
+find_package(VulkanUtilityLibraries)
 
 add_subdirectory(data)
 
