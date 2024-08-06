@@ -91,6 +91,7 @@ set(
     SOURCE_FILES
     "src/audio.hpp"
     "src/audio.cpp"
+    "src/audio/node.hpp"
     "src/main.cpp"
     "src/window.cpp"
     "src/application.cpp"
