@@ -45,7 +45,9 @@ namespace milg {
     }
 
     void Application::run() {
-        auto current_time = std::chrono::high_resolution_clock::now();
+        auto     current_time   = std::chrono::high_resolution_clock::now();
+        uint32_t elapsed_frames = 0;
+        float    elapsed_time   = 0.0f;
 
         while (m_running) {
             auto  new_time = std::chrono::high_resolution_clock::now();
@@ -197,6 +199,15 @@ namespace milg {
             m_frame_resources.last_frame = m_frame_resources.current_frame;
             m_frame_resources.current_frame =
                 (m_frame_resources.current_frame + 1) % m_frame_resources.MAX_FRAMES_IN_FLIGHT;
+
+            elapsed_frames++;
+            elapsed_time += delta_time;
+            if (elapsed_time >= 1.0) {
+                m_frames_per_second = elapsed_frames;
+
+                elapsed_frames = 0;
+                elapsed_time   = 0.0;
+            }
         }
     }
 
@@ -223,6 +234,10 @@ namespace milg {
 
     const std::shared_ptr<Swapchain> &Application::swapchain() const {
         return m_swapchain;
+    }
+
+    uint32_t Application::frames_per_second() const {
+        return m_frames_per_second;
     }
 
     void Application::on_event(Event &event) {

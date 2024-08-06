@@ -52,7 +52,34 @@ FetchContent_Declare(
   GIT_PROGRESS TRUE
 )
 
-FetchContent_MakeAvailable(sdl volk imgui spdlog miniaudio)
+FetchContent_Declare(
+  glm
+  GIT_REPOSITORY https://github.com/g-truc/glm.git
+  GIT_TAG 1.0.1
+  GIT_SHALLOW TRUE
+  GIT_PROGRESS TRUE
+)
+
+set(VMA_STATIC_VULKAN_FUNCTIONS FORCE BOOL OFF)
+set(VMA_DYNAMIC_VULKAN_FUNCTIONS FORCE BOOL ON)
+FetchContent_Declare(
+  vma
+  GIT_REPOSITORY
+  https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
+  GIT_TAG v3.1.0
+  GIT_SHALLOW TRUE
+  GIT_PROGRESS TRUE
+)
+
+FetchContent_Declare(
+  stb
+  GIT_REPOSITORY https://github.com/nothings/stb.git
+  GIT_TAG f75e8d1cad7d90d72ef7a4661f1b994ef78b4e31
+  GIT_SHALLOW TRUE
+  GIT_PROGRESS TRUE
+)
+
+FetchContent_MakeAvailable(sdl volk imgui spdlog miniaudio glm vma stb)
 
 find_package(Vulkan)
 find_package(VulkanUtilityLibraries)
@@ -72,6 +99,9 @@ set(
     "src/swapchain.cpp"
     "src/logging.cpp"
     "src/imgui_layer.cpp"
+    "src/texture.cpp"
+    "src/buffer.cpp"
+    "src/sprite_batch.cpp"
     "${imgui_SOURCE_DIR}/imgui.cpp"
     "${imgui_SOURCE_DIR}/imgui_draw.cpp"
     "${imgui_SOURCE_DIR}/imgui_demo.cpp"
@@ -86,7 +116,12 @@ add_dependencies(${TARGET_NAME} shaders)
 target_compile_definitions(${TARGET_NAME} PRIVATE IMGUI_IMPL_VULKAN_USE_VOLK)
 target_include_directories(
     ${TARGET_NAME}
-    PRIVATE ${imgui_SOURCE_DIR} ${miniaudio_SOURCE_DIR}
+    PRIVATE
+    ${imgui_SOURCE_DIR}
+    ${miniaudio_SOURCE_DIR}
+    ${vma_SOURCE_DIR}/include
+    ${stb_SOURCE_DIR}
+    ${glm_SOURCE_DIR}/glm
 )
 target_link_libraries(
     ${TARGET_NAME} PRIVATE
@@ -94,4 +129,5 @@ target_link_libraries(
     volk::volk
     Vulkan::UtilityHeaders
     spdlog::spdlog
+    glm::glm
 )

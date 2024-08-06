@@ -7,6 +7,9 @@
 #define VOLK_IMPLEMENTATION
 #include <volk.h>
 
+#define VMA_IMPLEMENTATION
+#include <vk_mem_alloc.h>
+
 #include <vector>
 
 const std::vector<const char *> requested_instance_layers = {"VK_LAYER_KHRONOS_validation"};
@@ -119,9 +122,6 @@ namespace milg {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         };
 
-        VkPhysicalDeviceFeatures features;
-        vkGetPhysicalDeviceFeatures(physical_device, &features);
-
         uint32_t queue_family_count = 0u;
         vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_count, nullptr);
 
@@ -146,12 +146,19 @@ namespace milg {
                 .pQueuePriorities = &queue_priority,
         };
 
+        VkPhysicalDeviceFeatures features = {};
+
         VkPhysicalDeviceVulkan12Features vulkan_12_features{
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES,
             .pNext = nullptr,
         };
-        vulkan_12_features.bufferDeviceAddress = VK_TRUE;
-        vulkan_12_features.descriptorIndexing  = VK_TRUE;
+        vulkan_12_features.bufferDeviceAddress                          = VK_TRUE;
+        vulkan_12_features.descriptorIndexing                           = VK_TRUE;
+        vulkan_12_features.runtimeDescriptorArray                       = VK_TRUE;
+        vulkan_12_features.descriptorBindingPartiallyBound              = VK_TRUE;
+        vulkan_12_features.descriptorBindingVariableDescriptorCount     = VK_TRUE;
+        vulkan_12_features.shaderSampledImageArrayNonUniformIndexing    = VK_TRUE;
+        vulkan_12_features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
 
         VkPhysicalDeviceVulkan13Features vulkan_13_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
@@ -186,20 +193,81 @@ namespace milg {
         VkPhysicalDeviceMemoryProperties memory_properties;
         vkGetPhysicalDeviceMemoryProperties(physical_device, &memory_properties);
 
+        const VmaVulkanFunctions vma_functions = {
+            .vkGetInstanceProcAddr                   = vkGetInstanceProcAddr,
+            .vkGetDeviceProcAddr                     = vkGetDeviceProcAddr,
+            .vkGetPhysicalDeviceProperties           = vkGetPhysicalDeviceProperties,
+            .vkGetPhysicalDeviceMemoryProperties     = vkGetPhysicalDeviceMemoryProperties,
+            .vkAllocateMemory                        = device_table.vkAllocateMemory,
+            .vkFreeMemory                            = device_table.vkFreeMemory,
+            .vkMapMemory                             = device_table.vkMapMemory,
+            .vkUnmapMemory                           = device_table.vkUnmapMemory,
+            .vkFlushMappedMemoryRanges               = device_table.vkFlushMappedMemoryRanges,
+            .vkInvalidateMappedMemoryRanges          = device_table.vkInvalidateMappedMemoryRanges,
+            .vkBindBufferMemory                      = device_table.vkBindBufferMemory,
+            .vkBindImageMemory                       = device_table.vkBindImageMemory,
+            .vkGetBufferMemoryRequirements           = device_table.vkGetBufferMemoryRequirements,
+            .vkGetImageMemoryRequirements            = device_table.vkGetImageMemoryRequirements,
+            .vkCreateBuffer                          = device_table.vkCreateBuffer,
+            .vkDestroyBuffer                         = device_table.vkDestroyBuffer,
+            .vkCreateImage                           = device_table.vkCreateImage,
+            .vkDestroyImage                          = device_table.vkDestroyImage,
+            .vkCmdCopyBuffer                         = device_table.vkCmdCopyBuffer,
+            .vkGetBufferMemoryRequirements2KHR       = device_table.vkGetBufferMemoryRequirements2KHR,
+            .vkGetImageMemoryRequirements2KHR        = device_table.vkGetImageMemoryRequirements2KHR,
+            .vkBindBufferMemory2KHR                  = device_table.vkBindBufferMemory2KHR,
+            .vkBindImageMemory2KHR                   = device_table.vkBindImageMemory2KHR,
+            .vkGetPhysicalDeviceMemoryProperties2KHR = vkGetPhysicalDeviceMemoryProperties2KHR,
+            .vkGetDeviceBufferMemoryRequirements     = device_table.vkGetDeviceBufferMemoryRequirements,
+            .vkGetDeviceImageMemoryRequirements      = device_table.vkGetDeviceImageMemoryRequirements,
+        };
+
+        const VmaAllocatorCreateInfo allocator_info = {
+            .flags                          = 0,
+            .physicalDevice                 = physical_device,
+            .device                         = device,
+            .preferredLargeHeapBlockSize    = 0,
+            .pAllocationCallbacks           = nullptr,
+            .pDeviceMemoryCallbacks         = nullptr,
+            .pHeapSizeLimit                 = nullptr,
+            .pVulkanFunctions               = &vma_functions,
+            .instance                       = instance,
+            .vulkanApiVersion               = VK_API_VERSION_1_3,
+            .pTypeExternalMemoryHandleTypes = nullptr,
+        };
+
+        VmaAllocator allocator = VK_NULL_HANDLE;
+        VK_CHECK(vmaCreateAllocator(&allocator_info, &allocator));
+
+        const VkCommandPoolCreateInfo command_pool_info = {
+            .sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+            .pNext            = nullptr,
+            .flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+            .queueFamilyIndex = queue_family_index,
+        };
+
+        VkCommandPool command_pool = VK_NULL_HANDLE;
+        VK_CHECK(device_table.vkCreateCommandPool(device, &command_pool_info, nullptr, &command_pool));
+
         auto context                           = std::shared_ptr<VulkanContext>(new VulkanContext());
         context->m_instance                    = instance;
         context->m_physical_device             = physical_device;
         context->m_device                      = device;
+        context->m_device_properties           = properties;
         context->m_device_table                = device_table;
         context->m_graphics_queue_family_index = queue_family_index;
         context->m_debug_messenger             = debug_messenger;
         context->m_graphics_queue              = graphics_queue;
         context->m_memory_properties           = memory_properties;
+        context->m_allocator                   = allocator;
+        context->m_command_pool                = command_pool;
 
         return context;
-    } // namespace milg
+    }
 
     VulkanContext::~VulkanContext() {
+        vmaDestroyAllocator(m_allocator);
+        m_device_table.vkDestroyCommandPool(m_device, m_command_pool, nullptr);
         m_device_table.vkDestroyDevice(m_device, nullptr);
         vkDestroyDebugUtilsMessengerEXT(m_instance, m_debug_messenger, nullptr);
         vkDestroyInstance(m_instance, nullptr);
@@ -211,6 +279,14 @@ namespace milg {
 
     VkPhysicalDevice VulkanContext::physical_device() const {
         return m_physical_device;
+    }
+
+    const VkPhysicalDeviceMemoryProperties &VulkanContext::memory_properties() const {
+        return m_memory_properties;
+    }
+
+    const VkPhysicalDeviceProperties &VulkanContext::device_properties() const {
+        return m_device_properties;
     }
 
     VkDevice VulkanContext::device() const {
@@ -229,6 +305,10 @@ namespace milg {
         return m_graphics_queue;
     }
 
+    VmaAllocator VulkanContext::allocator() const {
+        return m_allocator;
+    }
+
     uint32_t VulkanContext::find_memory_type(uint32_t type_filter, VkMemoryPropertyFlags properties) const {
         for (uint32_t i = 0; i < m_memory_properties.memoryTypeCount; i++) {
             if ((type_filter & (1 << i)) &&
@@ -240,8 +320,8 @@ namespace milg {
         return UINT32_MAX;
     }
 
-    void VulkanContext::transition_image_layout(VkCommandBuffer command_buffer, VkImage image, VkFormat format,
-                                                VkImageLayout old_layout, VkImageLayout new_layout) const {
+    void VulkanContext::transition_image_layout(VkCommandBuffer command_buffer, VkImage image, VkImageLayout old_layout,
+                                                VkImageLayout new_layout) const {
         VkImageMemoryBarrier2 image_barrier = {
             .sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
             .pNext               = nullptr,
@@ -275,5 +355,50 @@ namespace milg {
         };
 
         vkCmdPipelineBarrier2(command_buffer, &dependency_info);
+    }
+
+    VkCommandBuffer VulkanContext::begin_single_time_commands() const {
+        VkCommandBufferAllocateInfo allocate_info = {
+            .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .pNext              = nullptr,
+            .commandPool        = m_command_pool,
+            .level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            .commandBufferCount = 1,
+        };
+
+        VkCommandBuffer command_buffer = VK_NULL_HANDLE;
+        VK_CHECK(m_device_table.vkAllocateCommandBuffers(m_device, &allocate_info, &command_buffer));
+
+        VkCommandBufferBeginInfo begin_info = {
+            .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+            .pNext            = nullptr,
+            .flags            = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+            .pInheritanceInfo = nullptr,
+        };
+
+        VK_CHECK(m_device_table.vkBeginCommandBuffer(command_buffer, &begin_info));
+
+        return command_buffer;
+    }
+
+    void VulkanContext::end_single_time_commands(VkCommandBuffer command_buffer) const {
+        VK_CHECK(m_device_table.vkEndCommandBuffer(command_buffer));
+
+        VkSubmitInfo submit_info = {
+            .sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+            .pNext                = nullptr,
+            .waitSemaphoreCount   = 0,
+            .pWaitSemaphores      = nullptr,
+            .pWaitDstStageMask    = nullptr,
+            .commandBufferCount   = 1,
+            .pCommandBuffers      = &command_buffer,
+            .signalSemaphoreCount = 0,
+            .pSignalSemaphores    = nullptr,
+        };
+
+        VK_CHECK(m_device_table.vkQueueSubmit(m_graphics_queue, 1, &submit_info, VK_NULL_HANDLE));
+        VK_CHECK(m_device_table.vkQueueWaitIdle(m_graphics_queue));
+
+        m_device_table.vkFreeCommandBuffers(m_device, m_command_pool, 1, &command_buffer);
     }
 } // namespace milg

@@ -165,9 +165,7 @@ namespace milg {
     void Swapchain::transition_current_image(VkCommandBuffer command_buffer, VkImageLayout new_layout) {
         SwapchainImage &image = m_images[m_image_index];
 
-        m_context->transition_image_layout(command_buffer, image.image, m_surface_format.format, image.layout,
-                                           new_layout);
-
+        m_context->transition_image_layout(command_buffer, image.image, image.layout, new_layout);
         image.layout = new_layout;
     }
 

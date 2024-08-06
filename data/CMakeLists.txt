@@ -1,6 +1,8 @@
 set(SHADER_SOURCES
     "shaders/triangle.frag"
     "shaders/triangle.vert"
+    "shaders/sprite_batch.frag"
+    "shaders/sprite_batch.vert"
 )
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/shaders")

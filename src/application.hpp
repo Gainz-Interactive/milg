@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <memory>
 #include <vector>
 
@@ -26,6 +27,8 @@ namespace milg {
 
         VkCommandBuffer aquire_command_buffer();
 
+        uint32_t frames_per_second() const;
+
     private:
         static Application *s_instance;
 
@@ -35,6 +38,8 @@ namespace milg {
         std::shared_ptr<ImGuiLayer>          m_imgui_layer = nullptr;
         std::vector<Layer *>                 m_layers      = {};
         bool                                 m_running     = true;
+
+        uint32_t m_frames_per_second = 0;
 
         struct {
             const uint32_t MAX_FRAMES_IN_FLIGHT = 2;

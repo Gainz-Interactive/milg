@@ -118,15 +118,15 @@ namespace milg {
 
     class MouseButtonEvent : public Event {
     public:
-        inline int32_t get_button() const {
-            return button;
+        inline int32_t button() const {
+            return m_button;
         }
 
     protected:
-        MouseButtonEvent(int32_t button) : button(button) {
+        MouseButtonEvent(int32_t button) : m_button(button) {
         }
 
-        int32_t button;
+        int32_t m_button;
     };
 
     class MousePressedEvent : public MouseButtonEvent {
