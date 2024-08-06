@@ -14,6 +14,7 @@
 #include <stdexcept>
 
 static ma_engine engine;
+static ma_node_graph node_graph;
 static SDL_AudioDeviceID device;
 
 namespace milg::audio {
@@ -58,6 +59,14 @@ void init() {
 
     if (ma_engine_init(&engine_cfg, &engine) != MA_SUCCESS) {
         throw std::runtime_error("Audio engine initialization failed");
+    }
+
+    MILG_DEBUG("Initializing miniaudio node graph…");
+
+    auto node_graph_config = ma_node_graph_config_init(ma_engine_get_channels(&engine));
+
+    if (ma_node_graph_init(&node_graph_config, NULL, &node_graph) != MA_SUCCESS) {
+        throw std::runtime_error("Initializing miniaudio node graph failed");
     }
 
     MILG_DEBUG("Initializing SDL audio subsystem…");
