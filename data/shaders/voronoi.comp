@@ -1,0 +1,54 @@
+#version 460
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f, set = 0, binding = 0) uniform image2D in_image;
+layout(rgba16f, set = 0, binding = 1) uniform image2D out_image;
+
+layout(push_constant) uniform PushConstants {
+    vec2 inverse_resolution;
+    vec2 offset;
+    vec2 misc;
+} push_constants;
+
+ivec2 clamped_coords(ivec2 coords, ivec2 size) {
+    return ivec2(clamp(coords.x, 0, size.x), clamp(coords.y, 0, size.y));
+}
+
+void main() {
+    ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+    vec2 uvs = vec2(storePos + vec2(0.5)) * push_constants.inverse_resolution;
+
+    float closest_dist = 9999999.9;
+    vec2 closest_pos = vec2(0.0);
+
+    ivec2 size = imageSize(in_image);
+
+    for (float x = -1.0; x <= 1.0; x += 1.0) {
+        for (float y = -1.0; y <= 1.0; y += 1.0) {
+            ivec2 voffset = storePos;
+            voffset += ivec2(x, y) * ivec2(push_constants.offset);
+
+            vec2 pos = vec2(0.0);
+            if (push_constants.misc.x == 1.0) {
+                pos = imageLoad(in_image, clamped_coords(voffset, size)).xy;
+            }
+            else {
+                pos = imageLoad(out_image, clamped_coords(voffset, size)).xy;
+            }
+            float dist = distance(pos.xy, uvs);
+
+            if (pos.x != 0.0 && pos.y != 0.0 && dist < closest_dist) {
+                closest_dist = dist;
+                closest_pos = pos;
+            }
+        }
+    }
+
+    if (push_constants.misc.x == 1.0) {
+        imageStore(out_image, storePos, vec4(closest_pos, 0.0, 1.0));
+    }
+    else {
+        imageStore(in_image, storePos, vec4(closest_pos, 0.0, 1.0));
+    }
+}

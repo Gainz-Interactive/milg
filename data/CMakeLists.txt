@@ -3,6 +3,11 @@ set(SHADER_SOURCES
     "shaders/triangle.vert"
     "shaders/sprite_batch.frag"
     "shaders/sprite_batch.vert"
+    "shaders/voronoi_seed.comp"
+    "shaders/voronoi.comp"
+    "shaders/distance_field.comp"
+    "shaders/raytrace.comp"
+    "shaders/composite.comp"
 )
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/shaders")
