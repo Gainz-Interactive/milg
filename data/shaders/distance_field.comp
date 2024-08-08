@@ -1,0 +1,17 @@
+#version 460
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rgba16f, set = 0, binding = 0) uniform image2D in_image;
+
+layout(r16f, set = 0, binding = 1) uniform image2D out_image;
+
+void main() {
+    ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+    vec2 uv = vec2(storePos + vec2(0.5)) / vec2(imageSize(out_image));
+
+    vec2 voronoi = imageLoad(in_image, storePos).xy;
+    float dst = clamp(distance(voronoi, uv) * 1.0, 0.0, 1.0);
+
+    imageStore(out_image, storePos, vec4(vec3(dst), 1.0));
+}

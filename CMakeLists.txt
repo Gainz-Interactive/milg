@@ -102,6 +102,7 @@ set(
     "src/texture.cpp"
     "src/buffer.cpp"
     "src/sprite_batch.cpp"
+    "src/pipeline.cpp"
     "${imgui_SOURCE_DIR}/imgui.cpp"
     "${imgui_SOURCE_DIR}/imgui_draw.cpp"
     "${imgui_SOURCE_DIR}/imgui_demo.cpp"

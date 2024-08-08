@@ -1,0 +1,107 @@
+#version 460
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(r16f, set = 0, binding = 0) uniform image2D in_df;
+layout(rgba8, set = 0, binding = 1) uniform image2D in_scene;
+layout(rgba8, set = 0, binding = 2) uniform image2D in_noise;
+layout(rgba16f, set = 0, binding = 3) uniform image2D in_last_pass;
+
+layout(rgba16f, set = 0, binding = 4) uniform image2D out_image;
+
+layout(push_constant) uniform PushConstants {
+    vec2 inverse_resolution;
+    float time;
+    float bounce_factor;
+    float blend_factor;
+    float _pad;
+} push_constants;
+
+const float samples_per_pixel = 16.0;
+const float max_steps = 128.0;
+
+#define TAU 6.2831853071795864769252867665590
+
+ivec2 to_store_pos(vec2 uv) {
+    return ivec2(uv * vec2(imageSize(in_df)));
+}
+
+float linear_sample_noise(vec2 uv) {
+    ivec2 pos = ivec2(uv * vec2(imageSize(in_noise)));
+    return imageLoad(in_noise, pos).r;
+}
+
+float get_noise(vec2 uv) {
+    return fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+void main() {
+    ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+    vec2 uv = vec2(storePos + vec2(0.5)) * push_constants.inverse_resolution;
+
+    vec3 final_color = vec3(0.0);
+    float final_emmision = 0.0;
+
+    ivec2 tiled_noise_uv = ivec2(storePos + push_constants.time * 2.0);
+    tiled_noise_uv.x = int(mod(tiled_noise_uv.x, imageSize(in_noise).x));
+    tiled_noise_uv.y = int(mod(tiled_noise_uv.y, imageSize(in_noise).y));
+
+    float noise = mod((imageLoad(in_noise, tiled_noise_uv).r * TAU) + (push_constants.time * 10.0), TAU) / TAU;
+    float angle = noise * TAU;
+
+    float delta = TAU * (1.0 / samples_per_pixel);
+    const float aspect = 1.0;
+    for (float i = 0; i < TAU; i += delta) {
+        vec2 origin = uv;
+        vec2 direction = vec2(cos(angle + i), -sin(angle + i));
+
+        vec3 ray_color = vec3(0.0);
+
+        vec2 pixel = vec2(origin.x * aspect, origin.y);
+        float t = 0.0;
+        float dst = 0.0;
+        vec2 hit_pos = vec2(0.0);
+        for (int j = 0; j < int(max_steps); j++) {
+            vec2 sample_point = pixel + (direction * t);
+            sample_point.x /= aspect;
+
+            dst = imageLoad(in_df, to_store_pos(sample_point)).r;
+            t += dst;
+
+            if (sample_point.x < 0.0 || sample_point.x > 1.0 || sample_point.y < 0.0 || sample_point.y > 1.0) {
+                break;
+            }
+
+            if (dst <= 0.001) {
+                vec3 src = imageLoad(in_scene, to_store_pos(sample_point)).rgb;
+                float src_lum = max(src.x, max(src.y, src.z));
+                vec2 src_pos = sample_point;
+
+                sample_point *= aspect;
+                sample_point -= (direction * t * clamp(noise, 0.1, 0.9));
+                sample_point /= aspect;
+
+                vec3 dst = imageLoad(in_last_pass, to_store_pos(sample_point)).rgb;
+                float dst_lum = max(dst.x, max(dst.y, dst.z));
+                vec2 dst_pos = sample_point;
+
+                float check = step(dst_lum, src_lum);
+                ray_color = (check > 0.0) ? src : mix(dst, src, push_constants.bounce_factor);
+                hit_pos = (check > 0.0) ? src_pos : dst_pos;
+
+                break;
+            }
+        }
+
+        final_emmision += max(ray_color.x, max(ray_color.y, ray_color.z));
+        final_color += ray_color;
+    }
+
+    vec3 c = (final_color / final_emmision) * (final_emmision / samples_per_pixel);
+    c = final_color / samples_per_pixel;
+
+    vec4 last_frame = imageLoad(in_last_pass, storePos);
+    c = mix(last_frame.rgb, c, 1.0 - push_constants.blend_factor);
+
+    imageStore(out_image, storePos, vec4(c, 1.0));
+}

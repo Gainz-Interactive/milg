@@ -30,6 +30,7 @@ namespace milg {
         ~Texture();
 
         void transition_layout(VkCommandBuffer command_buffer, VkImageLayout new_layout);
+        void blit_from(const std::shared_ptr<Texture> &src, VkCommandBuffer command_buffer);
 
         VkImage               handle() const;
         VkImageView           image_view() const;
