@@ -1,0 +1,127 @@
+#version 460
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(rg8, set = 0, binding = 0) uniform readonly image2D in_df;
+layout(rgba8, set = 0, binding = 1) uniform readonly image2D in_scene;
+layout(rgba8, set = 0, binding = 2) uniform readonly image2D in_albedo;
+layout(rgba8, set = 0, binding = 3) uniform readonly image2D in_noise;
+
+layout(rgba16f, set = 0, binding = 4) uniform image2D in_last_pass;
+layout(rgba16f, set = 0, binding = 5) uniform image2D out_image;
+
+layout(push_constant) uniform PushConstants {
+    vec2 inverse_resolution;
+    vec2 resolution;
+    float time;
+    float bounce_factor;
+    float blend_factor;
+    float _pad;
+} push_constants;
+
+const float samples_per_pixel = 16.0;
+const float max_steps = 128.0;
+
+#define dot2(x) dot(x, x)
+#define TAU 6.2831853071795864769252867665590
+#define V2F16(v) ((v.y * float(0.0039215689)) + v.x)
+
+float falloff(float dist) {
+    float attenuation = clamp(1.0 - ((dist * dist) * push_constants.inverse_resolution.y * 0.005), 0.0, 1.0);
+    // attenuation = 1.0f;
+
+    return attenuation;
+}
+
+float epsilon() {
+    return 0.5 * max(push_constants.inverse_resolution.x, push_constants.inverse_resolution.y);
+}
+
+void main() {
+    float aspect = push_constants.resolution.x / push_constants.resolution.y;
+    float inverse_aspect = push_constants.resolution.y / push_constants.resolution.x;
+
+    ivec2 sample_pos = ivec2(gl_GlobalInvocationID.xy);
+    vec2 uv = vec2(sample_pos + vec2(0.5)) * push_constants.inverse_resolution;
+
+    ivec2 df_size = imageSize(in_df);
+    ivec2 scene_size = imageSize(in_scene);
+
+    vec3 final_color = vec3(0.0);
+    float final_emmision = 0.0;
+
+    ivec2 tiled_noise_uv = ivec2(sample_pos);
+    tiled_noise_uv.x = int(mod(tiled_noise_uv.x, imageSize(in_noise).x));
+    tiled_noise_uv.y = int(mod(tiled_noise_uv.y, imageSize(in_noise).y));
+
+    float noise = imageLoad(in_noise, tiled_noise_uv).r;
+    float angle = noise * TAU;
+
+    float delta = TAU * (1.0 / samples_per_pixel);
+    for (float i = 0; i < TAU; i += delta) {
+        vec2 origin = uv;
+        vec2 direction = vec2(cos(angle + i), -sin(angle + i));
+        vec3 ray_color = vec3(0.0);
+
+        vec2 pixel = vec2(origin.x * aspect, origin.y);
+        float t = 0.0;
+        float dst = 0.0;
+        vec2 hit_pos = vec2(0.0);
+        for (int j = 0; j < int(max_steps); j++) {
+            vec2 sample_point = pixel + (direction * t);
+            sample_point.x *= inverse_aspect;
+
+            vec2 df_data = imageLoad(in_df, ivec2(sample_point * df_size)).rg;
+            dst = V2F16(df_data);
+            t += dst;
+
+            if (sample_point.x < 0.0 || sample_point.x > 1.0 || sample_point.y < 0.0 || sample_point.y > 1.0) {
+                break;
+            }
+
+            if (dst <= epsilon()) {
+                vec3 base_radiosity = imageLoad(in_scene, ivec2(sample_point * scene_size)).rgb;
+
+                vec3 albedo_radiosity = imageLoad(in_albedo, ivec2(sample_point * scene_size)).rgb;
+                // albedo_radiosity.rgb = pow(albedo_radiosity.rgb, vec3(2.2));
+                float albedo_lum = max(albedo_radiosity.x, max(albedo_radiosity.y, albedo_radiosity.z));
+
+                vec2 dir = direction;
+                dir.x *= aspect;
+
+                vec2 secondary_sample = sample_point - (dir * push_constants.inverse_resolution);
+                if (t <= epsilon()) {
+                    secondary_sample = sample_point + (dir * push_constants.inverse_resolution);
+                }
+
+                vec3 accumulated_radiosity = imageLoad(in_last_pass, ivec2(secondary_sample * scene_size)).rgb * push_constants.bounce_factor;
+                float lum = max(accumulated_radiosity.x, max(accumulated_radiosity.y, accumulated_radiosity.z));
+                accumulated_radiosity *= albedo_radiosity;
+
+                vec3 radiosity = max(base_radiosity, accumulated_radiosity);
+                float radiosity_luminance = max(radiosity.x, max(radiosity.y, radiosity.z));
+
+                // radiosity = radiosity + albedo_radiosity * radiosity_luminance;
+
+                ray_color = radiosity;
+                hit_pos = sample_point;
+
+                break;
+            }
+        }
+
+        float att = falloff(distance(hit_pos / push_constants.inverse_resolution, origin / push_constants.inverse_resolution));
+        final_emmision += max(ray_color.x, max(ray_color.y, ray_color.z)) * att;
+        final_color += ray_color * att;
+    }
+
+    final_emmision /= samples_per_pixel;
+    final_color /= samples_per_pixel;
+
+    vec4 c = vec4(final_color, final_emmision);
+
+    vec4 last_frame = imageLoad(in_last_pass, sample_pos);
+    c = mix(last_frame, c, 1.0 - push_constants.blend_factor);
+
+    imageStore(out_image, sample_pos, c);
+}

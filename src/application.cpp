@@ -66,6 +66,13 @@ namespace milg {
                 std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
             current_time = new_time;
 
+            // while (delta_time < 0.0166666) {
+            //     new_time = std::chrono::high_resolution_clock::now();
+            //     delta_time +=
+            //         std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
+            //     current_time = new_time;
+            // }
+
             if (!m_window->poll_events()) {
                 close();
                 break;
@@ -73,11 +80,6 @@ namespace milg {
 
             uint32_t frame_index      = m_frame_resources.current_frame;
             uint32_t last_frame_index = m_frame_resources.last_frame;
-
-            // TODO: This is not exactly a correct place to wait for the fence, resulting almost the same effect as a
-            // waitIdle call, if performance tanks, this should be moved further down
-            m_context->device_table().vkWaitForFences(m_context->device(), 1,
-                                                      &m_frame_resources.fences[last_frame_index], VK_TRUE, UINT64_MAX);
 
             std::vector<VkSubmitInfo> submit_infos;
 
@@ -114,6 +116,11 @@ namespace milg {
             ImGui_ImplVulkan_NewFrame();
             ImGui_ImplSDL2_NewFrame();
             ImGui::NewFrame();
+
+            // TODO: This is not exactly a correct place to wait for the fence, resulting almost the same effect as a
+            // waitIdle call, if performance tanks, this should be moved further down
+            m_context->device_table().vkWaitForFences(m_context->device(), 1,
+                                                      &m_frame_resources.fences[last_frame_index], VK_TRUE, UINT64_MAX);
 
             for (auto layer : m_layers) {
                 layer->on_update(delta_time);
