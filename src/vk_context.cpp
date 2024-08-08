@@ -159,6 +159,7 @@ namespace milg {
         vulkan_12_features.descriptorBindingVariableDescriptorCount     = VK_TRUE;
         vulkan_12_features.shaderSampledImageArrayNonUniformIndexing    = VK_TRUE;
         vulkan_12_features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+        vulkan_12_features.hostQueryReset                               = VK_TRUE;
 
         VkPhysicalDeviceVulkan13Features vulkan_13_features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES,
@@ -287,6 +288,10 @@ namespace milg {
 
     const VkPhysicalDeviceProperties &VulkanContext::device_properties() const {
         return m_device_properties;
+    }
+
+    const VkPhysicalDeviceLimits &VulkanContext::device_limits() const {
+        return m_device_properties.limits;
     }
 
     VkDevice VulkanContext::device() const {

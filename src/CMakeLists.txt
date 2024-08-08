@@ -25,6 +25,7 @@ set(
     "texture.cpp"
     "vk_context.cpp"
     "window.cpp"
+    "pipeline.cpp"
     "${imgui_SOURCE_DIR}/imgui.cpp"
     "${imgui_SOURCE_DIR}/imgui_draw.cpp"
     "${imgui_SOURCE_DIR}/imgui_demo.cpp"
@@ -61,4 +62,5 @@ target_link_libraries(
     Vulkan::UtilityHeaders
     spdlog::spdlog
     glm::glm
+    nlohmann_json::nlohmann_json
 )

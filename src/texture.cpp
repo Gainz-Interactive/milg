@@ -375,6 +375,51 @@ namespace milg {
         m_layout = new_layout;
     }
 
+    void Texture::blit_from(const std::shared_ptr<Texture> &from, VkCommandBuffer command_buffer) {
+        VkImageBlit2 blit_region = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_BLIT_2,
+            .pNext = nullptr,
+            .srcSubresource =
+                {
+                    .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .mipLevel       = 0,
+                    .baseArrayLayer = 0,
+                    .layerCount     = 1,
+                },
+            .srcOffsets =
+                {
+                    {0, 0, 0},
+                    {static_cast<int32_t>(from->width()), static_cast<int32_t>(from->height()), 1},
+                },
+            .dstSubresource =
+                {
+                    .aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT,
+                    .mipLevel       = 0,
+                    .baseArrayLayer = 0,
+                    .layerCount     = 1,
+                },
+            .dstOffsets =
+                {
+                    {0, 0, 0},
+                    {static_cast<int32_t>(m_width), static_cast<int32_t>(m_height), 1},
+                },
+        };
+
+        VkBlitImageInfo2 blit_info = {
+            .sType          = VK_STRUCTURE_TYPE_BLIT_IMAGE_INFO_2,
+            .pNext          = nullptr,
+            .srcImage       = from->handle(),
+            .srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+            .dstImage       = m_handle,
+            .dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            .regionCount    = 1,
+            .pRegions       = &blit_region,
+            .filter         = VK_FILTER_LINEAR,
+        };
+
+        vkCmdBlitImage2(command_buffer, &blit_info);
+    }
+
     VkImage Texture::handle() const {
         return m_handle;
     }

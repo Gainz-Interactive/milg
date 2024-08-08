@@ -30,6 +30,7 @@ namespace milg {
         VkPhysicalDevice                        physical_device() const;
         const VkPhysicalDeviceMemoryProperties &memory_properties() const;
         const VkPhysicalDeviceProperties       &device_properties() const;
+        const VkPhysicalDeviceLimits           &device_limits() const;
         VkDevice                                device() const;
         const VolkDeviceTable                  &device_table() const;
         uint32_t                                graphics_queue_family_index() const;

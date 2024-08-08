@@ -1,15 +1,17 @@
 
 #version 450
-#extension GL_ARB_separate_shader_objects : enable
 
 layout(location = 0) in vec4 in_position_size;
 layout(location = 1) in vec4 in_uv;
 layout(location = 2) in vec4 in_color;
-layout(location = 3) in vec2 in_rotation_material;
+layout(location = 3) in vec2 in_rotation_emission;
+layout(location = 4) in vec2 in_texture_indices;
 
 layout(location = 1) out vec2 frag_uv;
 layout(location = 2) out vec4 frag_color;
-layout(location = 3) flat out uint out_texture_id;
+layout(location = 3) out float out_emission_strength;
+layout(location = 4) flat out uint out_texture_id;
+layout(location = 5) flat out uint out_emissive_texture_id;
 
 layout(push_constant) uniform PushConstants {
     mat4 view_proj;
@@ -31,8 +33,9 @@ void main() {
     const uint corner_index = vertex_idx > 2 ? (vertex_idx - 1) % 4 : vertex_idx;
 
     vec2 pos = positions[corner_index];
-    pos = rotate(pos, in_rotation_material.x);
     pos *= in_position_size.zw;
+    pos = rotate(pos, in_rotation_emission.x);
+
     pos += in_position_size.xy;
 
     gl_Position = push_constants.view_proj * vec4(pos, 0.0, 1.0);
@@ -41,5 +44,7 @@ void main() {
 
     frag_uv = uvs[corner_index];
     frag_color = in_color;
-    out_texture_id = uint(in_rotation_material.y);
+    out_emission_strength = in_rotation_emission.y;
+    out_texture_id = uint(in_texture_indices.x);
+    out_emissive_texture_id = uint(in_texture_indices.y);
 }

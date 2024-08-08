@@ -13,14 +13,16 @@
 
 namespace milg {
     struct Sprite {
-        glm::vec2 position      = {0.0f, 0.0f};
-        glm::vec2 size          = {0.0f, 0.0f};
-        glm::vec4 uvs           = {0.0f, 0.0f, 1.0f, 1.0f};
-        glm::vec4 color         = {1.0f, 1.0f, 1.0f, 1.0f};
-        float     rotation      = 0.0f;
-        float     texture_index = 0.0f;
+        glm::vec2 position               = {0.0f, 0.0f};
+        glm::vec2 size                   = {0.0f, 0.0f};
+        glm::vec4 uvs                    = {0.0f, 0.0f, 1.0f, 1.0f};
+        glm::vec4 color                  = {1.0f, 1.0f, 1.0f, 1.0f};
+        float     rotation               = 0.0f;
+        float     emission_strength      = 0.0f;
+        float     texture_index          = 0.0f;
+        float     emissive_texture_index = 0.0f;
 
-        static constexpr uint32_t ATTRIB_COUNT = 14;
+        static constexpr uint32_t ATTRIB_COUNT = 16;
     };
     static_assert(sizeof(Sprite) == Sprite::ATTRIB_COUNT * sizeof(float),
                   "Sprite struct might not be packed correctly");
@@ -31,11 +33,13 @@ namespace milg {
 
         static std::shared_ptr<SpriteBatch> create(AssetStore                           &asset_store,
                                                    const std::shared_ptr<VulkanContext> &context,
-                                                   VkFormat render_format, uint32_t capacity);
+                                                   VkFormat albdedo_render_format, VkFormat emissive_render_format,
+                                                   uint32_t capacity);
 
         ~SpriteBatch();
 
-        void draw_sprite(Sprite &sprite, const std::shared_ptr<Texture> &texture);
+        void draw_sprite(Sprite &sprite, const std::shared_ptr<Texture> &texture,
+                         const std::shared_ptr<Texture> &emissive_texture);
         void reset();
         void begin_batch(const glm::mat4 &matrix);
         void build_batches(VkCommandBuffer command_buffer);

@@ -7,12 +7,20 @@
         "path": "sound/c1a0_sci_dis10a.wav",
         "type": "sound"
     },
-    "one.png": {
-        "path": "one.png",
+    "map": {
+        "path": "textures/map.png",
         "type": "image"
     },
-    "two.png": {
-        "path": "two.png",
+    "noise": {
+        "path": "textures/noise.png",
+        "type": "image"
+    },
+    "map_emissive": {
+        "path": "textures/map_emissive.png",
+        "type": "image"
+    },
+    "light": {
+        "path": "textures/light.png",
         "type": "image"
     },
     "sprite_batch.frag.spv": {
@@ -20,5 +28,23 @@
     },
     "sprite_batch.vert.spv": {
         "path": "shaders/sprite_batch.vert.spv"
+    },
+    "composite.comp.spv": {
+        "path": "shaders/composite.comp.spv"
+    },
+    "distance_field.comp.spv": {
+        "path": "shaders/distance_field.comp.spv"
+    },
+    "noise_seed.comp.spv": {
+        "path": "shaders/noise_seed.comp.spv"
+    },
+    "raytrace.comp.spv": {
+        "path": "shaders/raytrace.comp.spv"
+    },
+    "voronoi.comp.spv": {
+        "path": "shaders/voronoi.comp.spv"
+    },
+    "voronoi_seed.comp.spv": {
+        "path": "shaders/voronoi_seed.comp.spv"
     }
 }

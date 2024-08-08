@@ -1,0 +1,21 @@
+#version 460
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+#define V2F16(v) ((v.y * float(0.0039215689)) + v.x)
+#define F16V2(f) vec2(floor(f * 255.0) * float(0.0039215689), fract(f * 255.0))
+
+layout(rgba8, set = 0, binding = 0) uniform readonly image2D in_image;
+
+layout(rg8, set = 0, binding = 1) uniform writeonly image2D out_image;
+
+void main() {
+    ivec2 sample_pos = ivec2(gl_GlobalInvocationID.xy);
+    vec2 uv = vec2(sample_pos + vec2(0.5)) / vec2(imageSize(out_image));
+
+    vec4 data = imageLoad(in_image, sample_pos);
+    vec2 voronoi = vec2(V2F16(data.rg), V2F16(data.ba));
+    float dst = clamp(distance(voronoi, uv), 0.0, 1.0);
+
+    imageStore(out_image, sample_pos, vec4(F16V2(dst), 0.0, 1.0));
+}

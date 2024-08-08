@@ -27,7 +27,8 @@ namespace milg {
 
     std::shared_ptr<SpriteBatch> SpriteBatch::create(AssetStore                           &asset_store,
                                                      const std::shared_ptr<VulkanContext> &context,
-                                                     VkFormat render_format, uint32_t capacity) {
+                                                     VkFormat albdedo_render_format, VkFormat emissive_render_format,
+                                                     uint32_t capacity) {
         MILG_INFO("Creating sprite batch with capacity: {}", capacity);
 
         auto vertex_shader_data = asset_store.get_asset("sprite_batch.vert.spv");
@@ -227,7 +228,7 @@ namespace milg {
             .inputRate = VK_VERTEX_INPUT_RATE_INSTANCE,
         };
 
-        const std::array<VkVertexInputAttributeDescription, 4> vertex_attribs = {
+        const std::array<VkVertexInputAttributeDescription, 5> vertex_attribs = {
             // x, y, width, height
             VkVertexInputAttributeDescription{
                 .location = 0,
@@ -249,12 +250,18 @@ namespace milg {
                 .format   = VK_FORMAT_R32G32B32A32_SFLOAT,
                 .offset   = 8 * sizeof(float),
             },
-            // rotation, material_id
+            // rotation, emission strength
             VkVertexInputAttributeDescription{
                 .location = 3,
                 .binding  = 0,
                 .format   = VK_FORMAT_R32G32_SFLOAT,
                 .offset   = 12 * sizeof(float),
+            },
+            VkVertexInputAttributeDescription{
+                .location = 4,
+                .binding  = 0,
+                .format   = VK_FORMAT_R32G32_SFLOAT,
+                .offset   = 14 * sizeof(float),
             },
         };
 
@@ -309,12 +316,15 @@ namespace milg {
             .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
             .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
             .colorBlendOp        = VK_BLEND_OP_ADD,
-            .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
-            .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+            .srcAlphaBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
+            .dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
             .alphaBlendOp        = VK_BLEND_OP_ADD,
             .colorWriteMask      = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT |
                               VK_COLOR_COMPONENT_A_BIT,
         };
+
+        std::array<VkPipelineColorBlendAttachmentState, 2> color_blend_attachments = {color_blend_attachment,
+                                                                                      color_blend_attachment};
 
         const VkPipelineColorBlendStateCreateInfo color_blend_info = {
             .sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
@@ -322,8 +332,8 @@ namespace milg {
             .flags           = 0,
             .logicOpEnable   = VK_FALSE,
             .logicOp         = VK_LOGIC_OP_COPY,
-            .attachmentCount = 1,
-            .pAttachments    = &color_blend_attachment,
+            .attachmentCount = static_cast<uint32_t>(color_blend_attachments.size()),
+            .pAttachments    = color_blend_attachments.data(),
             .blendConstants  = {0.0f, 0.0f, 0.0f, 0.0f},
         };
 
@@ -350,11 +360,13 @@ namespace milg {
             .pScissors     = nullptr,
         };
 
+        const std::array<VkFormat, 2> render_formats = {albdedo_render_format, emissive_render_format};
+
         const VkPipelineRenderingCreateInfo dynamic_rendering_info = {
             .sType                   = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
             .pNext                   = nullptr,
-            .colorAttachmentCount    = 1,
-            .pColorAttachmentFormats = &render_format,
+            .colorAttachmentCount    = static_cast<uint32_t>(render_formats.size()),
+            .pColorAttachmentFormats = render_formats.data(),
             .depthAttachmentFormat   = VK_FORMAT_UNDEFINED,
             .stencilAttachmentFormat = VK_FORMAT_UNDEFINED,
         };
@@ -405,7 +417,8 @@ namespace milg {
         return batch;
     }
 
-    void SpriteBatch::draw_sprite(Sprite &sprite, const std::shared_ptr<Texture> &texture) {
+    void SpriteBatch::draw_sprite(Sprite &sprite, const std::shared_ptr<Texture> &texture,
+                                  const std::shared_ptr<Texture> &emissive_texture) {
         if (m_sprite_count >= m_capacity) {
             MILG_ERROR("SpriteBatch::draw_sprite: Exceeded capacity");
             return;
@@ -418,7 +431,9 @@ namespace milg {
 
         auto &batch = m_batches.back();
 
-        sprite.texture_index = register_texture(texture);
+        sprite.texture_index          = register_texture(texture);
+        sprite.emissive_texture_index = register_texture(emissive_texture);
+
         float *geometry_data = this->m_backing_buffer
                                    ? reinterpret_cast<float *>(this->m_backing_buffer->allocation_info().pMappedData)
                                    : this->m_geometry_cache.data();
