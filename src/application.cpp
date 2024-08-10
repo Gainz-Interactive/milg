@@ -29,6 +29,7 @@ namespace milg {
         });
 
         audio::init();
+        audio::set_volume(.5f);
     }
 
     Application::~Application() {
