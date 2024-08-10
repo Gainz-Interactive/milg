@@ -79,7 +79,15 @@ FetchContent_Declare(
   GIT_PROGRESS TRUE
 )
 
-FetchContent_MakeAvailable(sdl volk imgui spdlog miniaudio glm vma stb)
+FetchContent_Declare(
+    voclib
+    GIT_REPOSITORY https://github.com/blastbay/voclib.git
+    GIT_TAG ffccd73b84e2a41b1f06d85ea703fd481ae8c9bb
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+
+FetchContent_MakeAvailable(sdl volk imgui spdlog miniaudio glm vma stb voclib)
 
 find_package(Vulkan)
 find_package(VulkanUtilityLibraries)
