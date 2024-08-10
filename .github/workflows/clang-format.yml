@@ -4,8 +4,8 @@ on:
     branches:
       - main
     paths:
-      - '**.cpp"
-      - '**.hpp"
+      - '**.cpp'
+      - '**.hpp'
   push:
     branches:
       - main
