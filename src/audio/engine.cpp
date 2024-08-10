@@ -15,8 +15,18 @@
 #include <SDL2/SDL.h>
 #include <stdexcept>
 
+class Endpoint : public milg::audio::Node {
+protected:
+    ma_node *get_handle() override {
+        auto node_graph = milg::audio::get_node_graph();
+
+        return ma_node_graph_get_endpoint(node_graph);
+    }
+};
+
 static ma_engine engine;
 static SDL_AudioDeviceID device;
+static auto endpoint = std::make_shared<Endpoint>();
 
 namespace milg::audio {
 void init() {
@@ -73,6 +83,10 @@ void destroy() {
     SDL_CloseAudioDevice(device);
     ma_engine_uninit(&engine);
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
+}
+
+std::shared_ptr<Node> get_endpoint() {
+    return endpoint;
 }
 
 ma_engine *get_engine() {
