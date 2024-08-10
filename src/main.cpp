@@ -189,9 +189,11 @@ public:
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Audio")) {
+                ImGui::SeparatorText("Master volume");
+
                 auto master_volume = audio::get_volume();
 
-                if (ImGui::SliderFloat("Master volume", &master_volume, 0.f, 1.f)) {
+                if (ImGui::SliderFloat("##master_vol", &master_volume, 0.f, 1.f)) {
                     audio::set_volume(master_volume);
                 }
 
@@ -204,7 +206,7 @@ public:
                     bool selected = selected_index == i;
                     auto volume   = sound.get_volume();
 
-                    if (ImGui::Button(std::format("Play##{}", key).c_str())) {
+                    if (ImGui::ArrowButton(std::format("##play_{}", key).c_str(), ImGuiDir_Right)) {
                         sound.play();
                     }
                     ImGui::SameLine();
