@@ -1,5 +1,7 @@
-#include "audio.hpp"
-#include "logging.hpp"
+#include "engine.hpp"
+#include "node.hpp"
+
+#include <logging.hpp>
 
 #ifndef MA_NO_DEVICE_IO
 #define MA_NO_DEVICE_IO
@@ -14,40 +16,9 @@
 #include <stdexcept>
 
 static ma_engine engine;
-static ma_node_graph node_graph;
 static SDL_AudioDeviceID device;
 
 namespace milg::audio {
-Sound::Sound(const std::string &path) {
-    auto res = ma_sound_init_from_file(
-        &engine,
-        path.c_str(),
-        0,
-        NULL,
-        NULL,
-        &this->sound
-    );
-    if (res != MA_SUCCESS) {
-        throw std::invalid_argument("Loading sound from file failed");
-    }
-}
-
-Sound::~Sound() {
-    ma_sound_uninit(&this->sound);
-}
-
-void Sound::play() {
-    ma_sound_start(&this->sound);
-}
-
-float Sound::get_volume() {
-    return ma_sound_get_volume(&this->sound);
-}
-
-void Sound::set_volume(float volume) {
-    ma_sound_set_volume(&this->sound, volume);
-}
-
 void init() {
     auto engine_cfg = ma_engine_config_init();
 
@@ -59,14 +30,6 @@ void init() {
 
     if (ma_engine_init(&engine_cfg, &engine) != MA_SUCCESS) {
         throw std::runtime_error("Audio engine initialization failed");
-    }
-
-    MILG_DEBUG("Initializing miniaudio node graph…");
-
-    auto node_graph_config = ma_node_graph_config_init(ma_engine_get_channels(&engine));
-
-    if (ma_node_graph_init(&node_graph_config, NULL, &node_graph) != MA_SUCCESS) {
-        throw std::runtime_error("Initializing miniaudio node graph failed");
     }
 
     MILG_DEBUG("Initializing SDL audio subsystem…");
@@ -110,6 +73,14 @@ void destroy() {
     SDL_CloseAudioDevice(device);
     ma_engine_uninit(&engine);
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
+}
+
+ma_engine *get_engine() {
+    return &engine;
+}
+
+ma_node_graph *get_node_graph() {
+    return ma_engine_get_node_graph(get_engine());
 }
 
 float get_volume() {
