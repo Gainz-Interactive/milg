@@ -12,7 +12,7 @@ on:
     paths:
       - '**.cpp'
       - '**.hpp'
-  workflow_call:
+  workflow_dispatch:
 jobs:
   format:
     runs-on: ubuntu-24.04
