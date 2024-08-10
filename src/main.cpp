@@ -26,7 +26,7 @@
 using namespace milg;
 
 static std::filesystem::path               bindir;
-static std::map<std::string, audio::Sound> sounds;
+static std::map<std::string, std::shared_ptr<audio::Sound>> sounds;
 
 struct Particle {
     Sprite    sprite   = {};
@@ -204,15 +204,15 @@ public:
 
                 for (auto &[key, sound] : sounds) {
                     bool selected = selected_index == i;
-                    auto volume   = sound.get_volume();
+                    auto volume = sound->get_volume();
 
                     if (ImGui::ArrowButton(std::format("##play_{}", key).c_str(), ImGuiDir_Right)) {
-                        sound.play();
+                        sound->play();
                     }
                     ImGui::SameLine();
                     ImGui::PushItemWidth(100);
                     if (ImGui::SliderFloat(std::format("##vol_{}", key).c_str(), &volume, 0.f, 1.f)) {
-                        sound.set_volume(volume);
+                        sound->set_volume(volume);
                     }
                     ImGui::SameLine();
                     if (ImGui::Selectable(key.c_str(), selected)) {
@@ -287,8 +287,8 @@ int main(int argc, char **argv) {
 
     Milglication app(window_info);
 
-    sounds.emplace("c1a0_sci_dis1d", "data/c1a0_sci_dis1d.wav");
-    sounds.emplace("c1a0_sci_dis10a", "data/c1a0_sci_dis10a.wav");
+    sounds.insert({ "c1a0_sci_dis1d", std::make_shared<milg::audio::Sound>("data/c1a0_sci_dis1d.wav" )});
+    sounds.insert({ "c1a0_sci_dis10a", std::make_shared<milg::audio::Sound>("data/c1a0_sci_dis10a.wav") });
 
     app.run();
 
