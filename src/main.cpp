@@ -25,9 +25,9 @@
 
 using namespace milg;
 
-static std::filesystem::path               bindir;
+static std::filesystem::path                                bindir;
 static std::map<std::string, std::shared_ptr<audio::Sound>> sounds;
-static std::shared_ptr<milg::audio::VocoderNode> vocoder_node;
+static std::shared_ptr<milg::audio::VocoderNode>            vocoder_node;
 
 struct Particle {
     Sprite    sprite   = {};
@@ -205,7 +205,7 @@ public:
 
                 for (auto &[key, sound] : sounds) {
                     bool selected = selected_index == i;
-                    auto volume = sound->get_volume();
+                    auto volume   = sound->get_volume();
 
                     if (ImGui::ArrowButton(std::format("##play_{}", key).c_str(), ImGuiDir_Right)) {
                         vocoder_node->detach_input(1);
@@ -293,8 +293,8 @@ int main(int argc, char **argv) {
     vocoder_node = std::make_shared<milg::audio::VocoderNode>();
     vocoder_node->attach_output<0, 0>(milg::audio::get_endpoint());
 
-    sounds.insert({ "c1a0_sci_dis1d", std::make_shared<milg::audio::Sound>("data/c1a0_sci_dis1d.wav" )});
-    sounds.insert({ "c1a0_sci_dis10a", std::make_shared<milg::audio::Sound>("data/c1a0_sci_dis10a.wav") });
+    sounds.insert({"c1a0_sci_dis1d", std::make_shared<milg::audio::Sound>("data/c1a0_sci_dis1d.wav")});
+    sounds.insert({"c1a0_sci_dis10a", std::make_shared<milg::audio::Sound>("data/c1a0_sci_dis10a.wav")});
 
     app.run();
 
