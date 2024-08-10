@@ -2,9 +2,12 @@ set(TARGET_NAME milg)
 set(
     SOURCE_FILES
     "application.cpp"
-    "audio.cpp"
     "audio.hpp"
+    "audio/engine.cpp"
+    "audio/engine.hpp"
     "audio/node.hpp"
+    "audio/sound.cpp"
+    "audio/sound.hpp"
     "buffer.cpp"
     "imgui_layer.cpp"
     "layer.cpp"
