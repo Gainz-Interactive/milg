@@ -1,0 +1,22 @@
+name: format
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - '**.cpp"
+      - '**.hpp"
+  push:
+    branches:
+      - main
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+  workflow_call:
+jobs:
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          clang-format -Werror --dry-run -- src/**/*.cpp src/**/*.hpp
