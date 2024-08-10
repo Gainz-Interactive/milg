@@ -8,6 +8,8 @@ set(
     "audio/node.hpp"
     "audio/sound.cpp"
     "audio/sound.hpp"
+    "audio/vocoder_node.cpp"
+    "audio/vocoder_node.hpp"
     "buffer.cpp"
     "imgui_layer.cpp"
     "layer.cpp"
