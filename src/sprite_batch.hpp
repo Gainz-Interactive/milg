@@ -5,7 +5,7 @@
 #include "vk_context.hpp"
 
 #include <cstdint>
-#include <glm.hpp>
+#include <glm/glm.hpp>
 #include <memory>
 #include <unordered_map>
 #include <vector>
