@@ -46,7 +46,7 @@ target_include_directories(
     ${voclib_SOURCE_DIR}
     ${vma_SOURCE_DIR}/include
     ${stb_SOURCE_DIR}
-    ${glm_SOURCE_DIR}/glm
+    ${glm_INCLUDE_DIR}
 )
 target_link_libraries(
     ${TARGET_NAME} PRIVATE
