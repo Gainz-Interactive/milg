@@ -20,9 +20,9 @@ namespace milg {
 
     class Texture {
     public:
-        static std::shared_ptr<Texture> load_from_file(const std::shared_ptr<VulkanContext> &context,
-                                                       const TextureCreateInfo              &create_info,
-                                                       const std::filesystem::path          &path);
+        static std::shared_ptr<Texture> load_from_data(const std::shared_ptr<VulkanContext> &context,
+                                                       const TextureCreateInfo &create_info, const char *data,
+                                                       std::size_t size);
 
         static std::shared_ptr<Texture> create(const std::shared_ptr<VulkanContext> &context,
                                                const TextureCreateInfo &create_info, uint32_t width, uint32_t height);

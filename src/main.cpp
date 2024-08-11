@@ -1,7 +1,6 @@
 #include <SDL_mouse.h>
 #include <cstdint>
 #include <cstdio>
-#include <filesystem>
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -25,9 +24,7 @@
 
 using namespace milg;
 
-static std::filesystem::path                                bindir;
-static std::map<std::string, std::shared_ptr<audio::Sound>> sounds;
-static std::shared_ptr<milg::audio::VocoderNode>            vocoder_node;
+static std::shared_ptr<milg::audio::VocoderNode> vocoder_node;
 
 struct Particle {
     Sprite    sprite   = {};
@@ -40,9 +37,10 @@ public:
 
     std::shared_ptr<Texture> framebuffer = nullptr;
 
-    std::shared_ptr<Texture>     texture      = nullptr;
-    std::shared_ptr<Texture>     texture2     = nullptr;
-    std::shared_ptr<SpriteBatch> sprite_batch = nullptr;
+    std::shared_ptr<Texture>                             texture      = nullptr;
+    std::shared_ptr<Texture>                             texture2     = nullptr;
+    std::shared_ptr<SpriteBatch>                         sprite_batch = nullptr;
+    std::map<std::string, std::shared_ptr<audio::Sound>> sounds;
 
     bool                  repel          = false;
     float                 mouse_x        = 0.0f;
@@ -53,8 +51,9 @@ public:
 
     void on_attach() override {
         MILG_INFO("Starting Milg");
-        context      = Application::get().context();
-        auto &window = Application::get().window();
+        context           = Application::get().context();
+        auto &window      = Application::get().window();
+        auto &asset_store = Application::get().get_asset_store();
 
         this->framebuffer =
             Texture::create(context,
@@ -70,9 +69,17 @@ public:
             .min_filter = VK_FILTER_NEAREST,
             .mag_filter = VK_FILTER_NEAREST,
         };
-        this->texture      = Texture::load_from_file(context, texture_info, "data/one.png");
-        this->texture2     = Texture::load_from_file(context, texture_info, "data/two.png");
-        this->sprite_batch = SpriteBatch::create(bindir, context, framebuffer->format(), particle_count);
+        {
+            auto texture_data = asset_store.get_asset("one.png");
+            this->texture =
+                Texture::load_from_data(context, texture_info, texture_data->get_data(), texture_data->get_size());
+        }
+        {
+            auto texture_data = asset_store.get_asset("two.png");
+            this->texture2 =
+                Texture::load_from_data(context, texture_info, texture_data->get_data(), texture_data->get_size());
+        }
+        this->sprite_batch = SpriteBatch::create(asset_store, context, framebuffer->format(), particle_count);
 
         for (uint32_t i = 0; i < particle_count; i++) {
             Sprite s;
@@ -85,6 +92,10 @@ public:
                 .sprite   = s,
                 .velocity = {glm::linearRand(-100.0f, 100.0f), glm::linearRand(-100.0f, 100.0f)},
             });
+        }
+
+        for (auto &[name, asset] : asset_store.get_assets(Asset::Type::SOUND)) {
+            this->sounds[name] = std::make_shared<milg::audio::Sound>(asset->get_data(), asset->get_size());
         }
     }
 
@@ -203,7 +214,7 @@ public:
                 int        i              = 0;
                 static int selected_index = 0;
 
-                for (auto &[key, sound] : sounds) {
+                for (auto &[key, sound] : this->sounds) {
                     bool selected = selected_index == i;
                     auto volume   = sound->get_volume();
 
@@ -270,7 +281,7 @@ public:
 
 class Milglication : public Application {
 public:
-    Milglication(const WindowCreateInfo &window_info) : Application(window_info) {
+    Milglication(int argc, char **argv, const WindowCreateInfo &window_info) : Application(argc, argv, window_info) {
         push_layer(new Milg());
     }
 
@@ -279,7 +290,6 @@ public:
 };
 
 int main(int argc, char **argv) {
-    bindir = std::filesystem::path(argv[0]).parent_path();
     Logging::init();
 
     WindowCreateInfo window_info = {
@@ -288,13 +298,10 @@ int main(int argc, char **argv) {
         .height = 800,
     };
 
-    Milglication app(window_info);
+    Milglication app(argc, argv, window_info);
 
     vocoder_node = std::make_shared<milg::audio::VocoderNode>();
     vocoder_node->attach_output<0, 0>(milg::audio::get_endpoint());
-
-    sounds.insert({"c1a0_sci_dis1d", std::make_shared<milg::audio::Sound>("data/c1a0_sci_dis1d.wav")});
-    sounds.insert({"c1a0_sci_dis10a", std::make_shared<milg::audio::Sound>("data/c1a0_sci_dis10a.wav")});
 
     app.run();
 

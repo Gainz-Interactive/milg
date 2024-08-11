@@ -8,18 +8,17 @@
 #include <cstdint>
 
 namespace milg {
-    std::shared_ptr<Texture> Texture::load_from_file(const std::shared_ptr<VulkanContext> &context,
-                                                     const TextureCreateInfo              &create_info,
-                                                     const std::filesystem::path          &path) {
-        MILG_INFO("Loading texture from file: {}", path.string());
-
+    std::shared_ptr<Texture> Texture::load_from_data(const std::shared_ptr<VulkanContext> &context,
+                                                     const TextureCreateInfo &create_info, const char *buf,
+                                                     std::size_t size) {
         int32_t  width    = 0;
         int32_t  height   = 0;
         int32_t  channels = 0;
-        stbi_uc *data     = stbi_load(path.string().c_str(), &width, &height, &channels, STBI_rgb_alpha);
+        stbi_uc *data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(buf), size, &width, &height, &channels,
+                                              STBI_rgb_alpha);
 
         if (!data) {
-            MILG_ERROR("Failed to read texture file {}: {}", path.string(), stbi_failure_reason());
+            MILG_ERROR("Failed to load texture data: {}", stbi_failure_reason());
             return nullptr;
         }
 

@@ -89,7 +89,27 @@ FetchContent_Declare(
     GIT_PROGRESS TRUE
 )
 
-FetchContent_MakeAvailable(sdl volk imgui spdlog miniaudio glm vma stb voclib)
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY
+    GIT_TAG v3.11.3
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+    FIND_PACKAGE_ARGS 3.11.3
+)
+
+FetchContent_MakeAvailable(
+    glm
+    imgui
+    miniaudio
+    nlohmann_json
+    sdl
+    spdlog
+    stb
+    vma
+    voclib
+    volk
+)
 
 find_package(Vulkan)
 find_package(VulkanUtilityLibraries)

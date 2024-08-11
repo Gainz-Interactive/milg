@@ -3,7 +3,6 @@
 #include "node.hpp"
 
 #include <miniaudio.h>
-#include <string>
 
 namespace milg::audio {
     class Sound : public Node {
@@ -12,7 +11,7 @@ namespace milg::audio {
         Sound(const Sound &) = delete;
         Sound(Sound &&)      = default;
 
-        Sound(const std::string &path);
+        Sound(char *data, std::size_t size);
 
         ~Sound();
 
@@ -27,6 +26,7 @@ namespace milg::audio {
         void  set_volume(float volume);
 
     private:
-        std::unique_ptr<ma_sound> sound;
+        ma_audio_buffer buffer;
+        ma_sound        sound;
     };
 } // namespace milg::audio

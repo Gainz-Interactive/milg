@@ -8,26 +8,14 @@
 #include <fstream>
 
 namespace milg {
-    VkShaderModule load_shader_module(const std::filesystem::path &bindir, const std::filesystem::path &path,
-                                      const std::shared_ptr<VulkanContext> &context) {
-        MILG_INFO("Loading shader module from file: {}", path.string());
-        std::ifstream file(path);
-        if (!file.is_open()) {
-            file = std::ifstream(bindir / path);
-        }
-        if (!file.is_open()) {
-            MILG_ERROR("Failed to open file: {}", path.string());
-            return VK_NULL_HANDLE;
-        }
-
-        std::vector<char> buffer((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    VkShaderModule load_shader_module(char *data, std::size_t size, const std::shared_ptr<VulkanContext> &context) {
 
         const VkShaderModuleCreateInfo shader_module_info = {
             .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
             .pNext    = nullptr,
             .flags    = 0,
-            .codeSize = buffer.size(),
-            .pCode    = reinterpret_cast<const uint32_t *>(buffer.data()),
+            .codeSize = size,
+            .pCode    = reinterpret_cast<const uint32_t *>(data),
         };
 
         VkShaderModule shader_module;
@@ -37,14 +25,28 @@ namespace milg {
         return shader_module;
     }
 
-    std::shared_ptr<SpriteBatch> SpriteBatch::create(const std::filesystem::path          &bindir,
+    std::shared_ptr<SpriteBatch> SpriteBatch::create(AssetStore                           &asset_store,
                                                      const std::shared_ptr<VulkanContext> &context,
                                                      VkFormat render_format, uint32_t capacity) {
         MILG_INFO("Creating sprite batch with capacity: {}", capacity);
 
-        VkShaderModule vertex_shader_module = load_shader_module(bindir, "data/shaders/sprite_batch.vert.spv", context);
-        VkShaderModule fragment_shader_module =
-            load_shader_module(bindir, "data/shaders/sprite_batch.frag.spv", context);
+        auto vertex_shader_data = asset_store.get_asset("sprite_batch.vert.spv");
+        if (!vertex_shader_data) {
+            MILG_ERROR("Vertex shader not loaded");
+
+            return nullptr;
+        }
+        auto vertex_shader_module =
+            load_shader_module(vertex_shader_data->get_data(), vertex_shader_data->get_size(), context);
+
+        auto fragment_shader_data = asset_store.get_asset("sprite_batch.frag.spv");
+        if (!fragment_shader_data) {
+            MILG_ERROR("Fragment shader not loaded");
+
+            return nullptr;
+        }
+        auto fragment_shader_module =
+            load_shader_module(fragment_shader_data->get_data(), fragment_shader_data->get_size(), context);
 
         if (vertex_shader_module == VK_NULL_HANDLE || fragment_shader_module == VK_NULL_HANDLE) {
             MILG_ERROR("Failed to load shader modules");
