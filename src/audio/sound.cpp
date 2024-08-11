@@ -1,17 +1,32 @@
 #include "sound.hpp"
 #include "engine.hpp"
+#include "error.hpp"
 
 #include <stdexcept>
 
 static const ma_uint32 DEFAULT_FLAGS = MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT;
 
 namespace milg::audio {
-    Sound::Sound(const std::string &path) : sound(std::make_unique<ma_sound>()) {
-        auto engine = get_engine();
-        auto res    = ma_sound_init_from_file(engine, path.c_str(), DEFAULT_FLAGS, NULL, NULL,
-                                              static_cast<ma_sound *>(this->get_handle()));
+    Sound::Sound(char *data, std::size_t size) {
+        auto      engine         = get_engine();
+        auto      sample_rate    = ma_engine_get_sample_rate(engine);
+        auto      channels       = ma_engine_get_channels(engine);
+        auto      decoder_config = ma_decoder_config_init(ma_format_f32, channels, sample_rate);
+        ma_uint64 frame_count    = 0;
+        void     *frames         = NULL;
+        auto      res            = ma_decode_memory(data, size, &decoder_config, &frame_count, &frames);
         if (res != MA_SUCCESS) {
-            throw std::invalid_argument("Loading sound from file failed");
+            throw std::runtime_error("Decoding sound data failed");
+        }
+        auto buffer_config = ma_audio_buffer_config_init(ma_format_f32, channels, frame_count, frames, NULL);
+
+        if (ma_audio_buffer_init(&buffer_config, &this->buffer) != MA_SUCCESS) {
+            throw std::runtime_error("Initializing sound buffer failed");
+        }
+
+        res = ma_sound_init_from_data_source(engine, &buffer, DEFAULT_FLAGS, NULL, &this->sound);
+        if (res != MA_SUCCESS) {
+            throw std::runtime_error("Loading sound failed");
         }
     }
 
@@ -20,7 +35,7 @@ namespace milg::audio {
     }
 
     ma_node *Sound::get_handle() {
-        return this->sound.get();
+        return &this->sound;
     }
 
     bool Sound::play() {

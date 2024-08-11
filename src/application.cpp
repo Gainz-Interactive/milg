@@ -10,18 +10,20 @@
 
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
 #include <memory>
 
 namespace milg {
     Application *Application::s_instance = nullptr;
 
-    Application::Application(const WindowCreateInfo &window_create_info) {
+    Application::Application(int argc, char **argv, const WindowCreateInfo &window_create_info) {
         Application::s_instance = this;
 
         m_window      = Window::create(window_create_info);
         m_context     = VulkanContext::create(m_window);
         m_swapchain   = Swapchain::create(m_window, m_context);
         m_imgui_layer = ImGuiLayer::create(m_swapchain, m_window, m_context);
+        asset_store   = std::make_unique<AssetStore>();
         init_frame_resources();
 
         m_window->set_event_callback([this](Event &event) {
@@ -30,11 +32,16 @@ namespace milg {
 
         audio::init();
         audio::set_volume(.5f);
+
+        auto bindir = std::filesystem::path(argv[0]).parent_path();
+
+        asset_store->add_search_path(bindir / "data");
+        asset_store->add_search_path("data");
+        asset_store->load_assets("data/assets.json");
     }
 
     Application::~Application() {
         Application::s_instance = nullptr;
-        audio::destroy();
 
         m_context->device_table().vkDeviceWaitIdle(m_context->device());
 
@@ -43,6 +50,9 @@ namespace milg {
             layer->on_detach();
             delete layer;
         }
+
+        asset_store->unload_assets();
+        audio::destroy();
     }
 
     void Application::run() {
@@ -239,6 +249,10 @@ namespace milg {
 
     uint32_t Application::frames_per_second() const {
         return m_frames_per_second;
+    }
+
+    AssetStore &Application::get_asset_store() {
+        return *this->asset_store;
     }
 
     void Application::on_event(Event &event) {

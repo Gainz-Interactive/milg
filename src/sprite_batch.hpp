@@ -1,5 +1,6 @@
 #pragma once
 
+#include "asset_store.hpp"
 #include "buffer.hpp"
 #include "texture.hpp"
 #include "vk_context.hpp"
@@ -28,7 +29,7 @@ namespace milg {
     public:
         constexpr static uint32_t TEXTURE_DESCRIPTOR_BINDING_COUNT = 1024;
 
-        static std::shared_ptr<SpriteBatch> create(const std::filesystem::path          &bindir,
+        static std::shared_ptr<SpriteBatch> create(AssetStore                           &asset_store,
                                                    const std::shared_ptr<VulkanContext> &context,
                                                    VkFormat render_format, uint32_t capacity);
 

@@ -2,6 +2,10 @@ set(TARGET_NAME milg)
 set(
     SOURCE_FILES
     "application.cpp"
+    "asset.cpp"
+    "asset.hpp"
+    "asset_store.cpp"
+    "asset_store.hpp"
     "audio.hpp"
     "audio/engine.cpp"
     "audio/engine.hpp"
@@ -11,6 +15,7 @@ set(
     "audio/vocoder_node.cpp"
     "audio/vocoder_node.hpp"
     "buffer.cpp"
+    "error.hpp"
     "imgui_layer.cpp"
     "layer.cpp"
     "logging.cpp"
@@ -47,6 +52,7 @@ target_include_directories(
     ${vma_SOURCE_DIR}/include
     ${stb_SOURCE_DIR}
     ${glm_INCLUDE_DIR}
+    ${nlohmann_json_INCLUDE_DIR}
 )
 target_link_libraries(
     ${TARGET_NAME} PRIVATE

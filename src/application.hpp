@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include "asset_store.hpp"
 #include "imgui_layer.hpp"
 #include "vk_context.hpp"
 #include "window.hpp"
@@ -11,7 +12,7 @@
 namespace milg {
     class Application {
     public:
-        Application(const WindowCreateInfo &window_create_info);
+        Application(int argc, char **argv, const WindowCreateInfo &window_create_info);
         virtual ~Application();
 
         void run();
@@ -29,6 +30,8 @@ namespace milg {
 
         uint32_t frames_per_second() const;
 
+        AssetStore &get_asset_store();
+
     private:
         static Application *s_instance;
 
@@ -38,6 +41,7 @@ namespace milg {
         std::shared_ptr<ImGuiLayer>          m_imgui_layer = nullptr;
         std::vector<Layer *>                 m_layers      = {};
         bool                                 m_running     = true;
+        std::unique_ptr<AssetStore>          asset_store;
 
         uint32_t m_frames_per_second = 0;
 

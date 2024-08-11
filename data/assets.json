@@ -1,0 +1,24 @@
+{
+    "c1a0_sci_dis1d.wav": {
+        "path": "sound/c1a0_sci_dis1d.wav",
+        "type": "sound"
+    },
+    "c1a0_sci_dis10a.wav": {
+        "path": "sound/c1a0_sci_dis10a.wav",
+        "type": "sound"
+    },
+    "one.png": {
+        "path": "one.png",
+        "type": "image"
+    },
+    "two.png": {
+        "path": "two.png",
+        "type": "image"
+    },
+    "sprite_batch.frag.spv": {
+        "path": "shaders/sprite_batch.frag.spv"
+    },
+    "sprite_batch.vert.spv": {
+        "path": "shaders/sprite_batch.vert.spv"
+    }
+}
