@@ -13,8 +13,6 @@ layout(push_constant) uniform PushConstants {
     vec2 misc;
 } push_constants;
 
-#define V2F16(v) ((v.y * float(0.0039215689)) + v.x)
-
 void main() {
     ivec2 sample_pos = ivec2(gl_GlobalInvocationID.xy);
     vec2 uvs = vec2(sample_pos + vec2(0.5)) / vec2(imageSize(out_image));

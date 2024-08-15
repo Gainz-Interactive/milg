@@ -4,9 +4,6 @@
 
 layout(local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE) in;
 
-#define V2F16(v) ((v.y * float(0.0039215689)) + v.x)
-#define F16V2(f) vec2(floor(f * 255.0) * float(0.0039215689), fract(f * 255.0))
-
 layout(rgba8, set = 0, binding = 0) uniform readonly image2D in_image;
 
 layout(rg8, set = 0, binding = 1) uniform writeonly image2D out_image;

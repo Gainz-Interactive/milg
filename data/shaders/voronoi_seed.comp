@@ -7,8 +7,6 @@ layout(local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE) in;
 layout(rgba8, set = 0, binding = 0) uniform readonly image2D in_image;
 layout(rgba8, set = 0, binding = 1) uniform writeonly image2D out_image;
 
-#define F16V2(f) vec2(floor(f * 255.0) * float(0.0039215689), fract(f * 255.0))
-
 void main() {
     ivec2 sample_pos = ivec2(gl_GlobalInvocationID.xy);
     vec2 uv = vec2(sample_pos + vec2(0.5)) / vec2(imageSize(out_image));
