@@ -1,6 +1,8 @@
 #version 460
 
-layout(local_size_x = 16, local_size_y = 16) in;
+#include "common.glsl"
+
+layout(local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE) in;
 
 #define V2F16(v) ((v.y * float(0.0039215689)) + v.x)
 #define F16V2(f) vec2(floor(f * 255.0) * float(0.0039215689), fract(f * 255.0))
