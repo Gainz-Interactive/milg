@@ -31,7 +31,7 @@ namespace milg {
 
         auto bindir = std::filesystem::path(argv[0]).parent_path();
 
-        asset_store::add_search_path(bindir / "data");
+        asset_store::add_search_path((bindir / "data").lexically_normal());
         asset_store::add_search_path("data");
         asset_store::load_assets("data/assets.json");
     }

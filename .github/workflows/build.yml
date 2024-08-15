@@ -1,0 +1,25 @@
+name: build
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 1de2026f28ead93ff1773e6e680387643e914ea1
+      - uses: lukka/run-cmake@v10
+        with:
+          workflowPreset: windows
