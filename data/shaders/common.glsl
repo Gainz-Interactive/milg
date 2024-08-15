@@ -1,0 +1,1 @@
+#define WORKGROUP_SIZE 32
