@@ -7,6 +7,7 @@ set(SHADER_SOURCES
     "shaders/raytrace.comp"
     "shaders/composite.comp"
     "shaders/noise_seed.comp"
+    "shaders/rt_upscale.comp"
 )
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/shaders")

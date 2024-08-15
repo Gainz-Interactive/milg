@@ -34,12 +34,14 @@ public:
     } raytrace_pass_constants;
 
     struct {
-        float enable_denoise    = 0.0f;
-        float exposure          = 5.0f;
+        float exposure = 5.0f;
+    } composite_pass_constants;
+
+    struct {
         float denoise_sigma     = 5.0f;
         float denoise_k_sigma   = 1.0f;
         float denoise_threshold = 0.05f;
-    } composite_pass_constants;
+    } rt_upscale_pass_constants;
 
     std::shared_ptr<Texture> albedo_buffer   = nullptr;
     std::shared_ptr<Texture> emissive_buffer = nullptr;
@@ -51,12 +53,14 @@ public:
     std::shared_ptr<SpriteBatch> sprite_batch     = nullptr;
 
     uint64_t                         frame_index             = 0;
+    float                            rt_scale                = 0.5f;
     std::shared_ptr<PipelineFactory> pipeline_factory        = nullptr;
     Pipeline                        *voronoi_seed_pipeline   = nullptr;
     Pipeline                        *voronoi_pipeline        = nullptr;
     Pipeline                        *distance_field_pipeline = nullptr;
     Pipeline                        *noise_seed_pipeline     = nullptr;
     Pipeline                        *raytrace_pipeline       = nullptr;
+    Pipeline                        *rt_upscale_pipeline     = nullptr;
     Pipeline                        *composite_pipeline      = nullptr;
 
     glm::vec2 mouse_position = {0.0f, 0.0f};
@@ -134,11 +138,21 @@ public:
             2, sizeof(float));
         this->raytrace_pipeline = this->pipeline_factory->create_compute_pipeline(
             "raytrace", "raytrace.comp.spv",
-            {PipelineOutputDescription{
-                 .format = VK_FORMAT_R16G16B16A16_SFLOAT, .width = window->width(), .height = window->height()},
+            {PipelineOutputDescription{.format = VK_FORMAT_R16G16B16A16_SFLOAT,
+                                       .width  = static_cast<uint32_t>(window->width() * rt_scale),
+                                       .height = static_cast<uint32_t>(window->height() * rt_scale)},
+             PipelineOutputDescription{.format = VK_FORMAT_R16G16B16A16_SFLOAT,
+                                       .width  = static_cast<uint32_t>(window->width() * rt_scale),
+                                       .height = static_cast<uint32_t>(window->height() * rt_scale)}},
+            6, sizeof(raytrace_pass_constants));
+        this->rt_upscale_pipeline = this->pipeline_factory->create_compute_pipeline(
+            "rt_upscale", "rt_upscale.comp.spv",
+            {PipelineOutputDescription{.format = VK_FORMAT_R16G16B16A16_SFLOAT,
+                                       .width  = static_cast<uint32_t>(window->width() * rt_scale),
+                                       .height = static_cast<uint32_t>(window->height() * rt_scale)},
              PipelineOutputDescription{
                  .format = VK_FORMAT_R16G16B16A16_SFLOAT, .width = window->width(), .height = window->height()}},
-            6, sizeof(raytrace_pass_constants));
+            2, sizeof(rt_upscale_pass_constants));
         this->composite_pipeline = this->pipeline_factory->create_compute_pipeline(
             "composite", "composite.comp.spv",
             {PipelineOutputDescription{
@@ -388,8 +402,32 @@ public:
         }
 
         {
+            auto pipeline        = rt_upscale_pipeline;
+            auto rt_output       = raytrace_pipeline->output_buffers[0];
+            auto denoised_output = pipeline->output_buffers[0];
+            auto upscaled_output = pipeline->output_buffers[1];
+
+            pipeline->begin(context, command_buffer);
+            denoised_output->transition_layout(command_buffer, VK_IMAGE_LAYOUT_GENERAL);
+            rt_output->transition_layout(command_buffer, VK_IMAGE_LAYOUT_GENERAL);
+
+            pipeline->bind_texture(context, command_buffer, 0, rt_output);
+            pipeline->bind_texture(context, command_buffer, 1, denoised_output);
+
+            pipeline->set_push_constants(context, command_buffer, sizeof(rt_upscale_pass_constants),
+                                         &rt_upscale_pass_constants);
+            context->device_table().vkCmdDispatch(command_buffer, denoised_output->width() / 16,
+                                                  denoised_output->height() / 16, 1);
+            pipeline->end(context, command_buffer);
+
+            denoised_output->transition_layout(command_buffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+            upscaled_output->transition_layout(command_buffer, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+            upscaled_output->blit_from(denoised_output, command_buffer);
+        }
+
+        {
             auto pipeline  = composite_pipeline;
-            auto rt_output = raytrace_pipeline->output_buffers[0];
+            auto rt_output = rt_upscale_pipeline->output_buffers[1];
             auto output    = pipeline->output_buffers[0];
 
             pipeline->begin(context, command_buffer, sizeof(composite_pass_constants), &composite_pass_constants);
@@ -441,14 +479,12 @@ public:
                 ImGui::SliderFloat("Blend Factor", &raytrace_pass_constants.blend_factor, 0.01f, 0.99f);
 
                 ImGui::SeparatorText("Composite Options");
-                bool enable_denoise = composite_pass_constants.enable_denoise == 1.0f;
-                if (ImGui::Checkbox("Denoise Light", &enable_denoise)) {
-                    composite_pass_constants.enable_denoise = enable_denoise ? 1.0f : 0.0f;
-                }
                 ImGui::SliderFloat("Exposure", &composite_pass_constants.exposure, 0.0f, 10.0f);
-                ImGui::SliderFloat("Denoise Sigma", &composite_pass_constants.denoise_sigma, 0.0f, 10.0f);
-                ImGui::SliderFloat("Denoise K Sigma", &composite_pass_constants.denoise_k_sigma, 0.0f, 10.0f);
-                ImGui::SliderFloat("Denoise Threshold", &composite_pass_constants.denoise_threshold, 0.0f, 1.0f);
+
+                ImGui::SeparatorText("Denoise Options");
+                ImGui::SliderFloat("Denoise Sigma", &rt_upscale_pass_constants.denoise_sigma, 0.0f, 10.0f);
+                ImGui::SliderFloat("Denoise K Sigma", &rt_upscale_pass_constants.denoise_k_sigma, 0.0f, 10.0f);
+                ImGui::SliderFloat("Denoise Threshold", &rt_upscale_pass_constants.denoise_threshold, 0.0f, 1.0f);
 
                 ImGui::EndTabItem();
             }

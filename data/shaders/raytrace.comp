@@ -34,7 +34,7 @@ float falloff(float dist) {
 }
 
 float epsilon() {
-    return 0.5 * max(push_constants.inverse_resolution.x, push_constants.inverse_resolution.y);
+    return 0.25 * max(push_constants.inverse_resolution.x, push_constants.inverse_resolution.y);
 }
 
 void main() {
@@ -94,7 +94,7 @@ void main() {
                     secondary_sample = sample_point + (dir * push_constants.inverse_resolution);
                 }
 
-                vec3 accumulated_radiosity = imageLoad(in_last_pass, ivec2(secondary_sample * scene_size)).rgb * push_constants.bounce_factor;
+                vec3 accumulated_radiosity = imageLoad(in_last_pass, ivec2(secondary_sample / push_constants.inverse_resolution)).rgb * push_constants.bounce_factor;
                 float lum = max(accumulated_radiosity.x, max(accumulated_radiosity.y, accumulated_radiosity.z));
                 accumulated_radiosity *= albedo_radiosity;
 
