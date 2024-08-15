@@ -9,49 +9,56 @@ layout(rgba16f, set = 0, binding = 0) uniform readonly image2D in_image;
 layout(rgba16f, set = 0, binding = 1) uniform writeonly image2D out_image;
 
 layout(push_constant) uniform PushConstants {
-    float denoise_sigma;
-    float denoise_k_sigma;
-    float denoise_threshold;
+    float sample_num;
+    float distribution_bias;
+    float pixel_multiplier;
+    float inverse_hue_tolerance;
 } push_constants;
 
-vec4 denoise_lightmap(ivec2 sample_pos, float sigma, float k_sigma, float threshold) {
-    float radius = floor(k_sigma * sigma + 0.5);
-    float rad_q = radius * radius;
+#define pow(a,b) pow(max(a, 0.0), b)
+mat2 sample_mat = mat2(cos(GOLDEN_ANGLE), sin(GOLDEN_ANGLE), -sin(GOLDEN_ANGLE), cos(GOLDEN_ANGLE));
 
-    float inv_sigma_qx2 = .5 / (sigma * sigma);
-    float inv_sigma_qx2PI = INV_PI * inv_sigma_qx2;
+vec3 denoise_lightmap(in vec2 uv, in ivec2 image_size) {
+    vec3 denoised = vec3(0.0);
 
-    float inv_threshold_sqx2 = .5 / (threshold * threshold);
-    float inv_threshold_sqrt2PI = INV_SQRT_OF_2PI / threshold;
+    const float sample_radius = sqrt(push_constants.sample_num);
+    const float sample_true_radius = 0.5 / (sample_radius * sample_radius);
+    vec2 sample_pixel = vec2(1.0 / image_size.x, 1.0 / image_size.y);
+    vec3 sample_center = imageLoad(in_image, ivec2(uv * image_size)).rgb;
+    vec3 sample_center_norm = normalize(sample_center);
+    float sample_center_sat = length(sample_center);
 
-    vec4 center = imageLoad(in_image, sample_pos);
+    float influence_sum = 0.0;
+    float brightness_sum = 0.0;
 
-    float z_buff = 0.0;
-    vec4 a_buff = vec4(0.0);
+    vec2 pixel_rotated = vec2(0.0, 1.0);
 
-    for (float x = -radius; x <= radius; x++) {
-        float pt = sqrt(rad_q - x * x);
-        for (float y = -pt; y <= pt; y++) {
-            vec2 d = vec2(x, y);
+    for (float x = 0.0; x <= push_constants.sample_num; x++) {
+        pixel_rotated *= sample_mat;
 
-            float blur_factor = exp(-dot(d, d) * inv_sigma_qx2) * inv_sigma_qx2PI;
+        vec2 pixel_offset = push_constants.pixel_multiplier * pixel_rotated * sqrt(x) * 0.5;
+        float pixel_influence = 1.0 - sample_true_radius * pow(dot(pixel_offset, pixel_offset), push_constants.distribution_bias);
+        pixel_offset *= sample_pixel;
 
-            vec4 walk_px = imageLoad(in_image, sample_pos + ivec2(d));
+        vec3 denoised_color =
+            imageLoad(in_image, ivec2((uv + pixel_offset) * image_size)).rgb;
 
-            vec4 d_c = walk_px - center;
-            float delta_factor = exp(-dot(d_c, d_c) * inv_threshold_sqx2) * inv_threshold_sqrt2PI * blur_factor;
+        pixel_influence *= pixel_influence * pixel_influence;
+        pixel_influence *=
+            pow(0.5 + 0.5 * dot(sample_center_norm, normalize(denoised_color)), push_constants.inverse_hue_tolerance)
+                * pow(1.0 - abs(length(denoised_color) - length(sample_center_sat)), 8.);
 
-            z_buff += delta_factor;
-            a_buff += delta_factor * walk_px;
-        }
+        influence_sum += pixel_influence;
+        denoised += denoised_color * pixel_influence;
     }
 
-    return a_buff / z_buff;
+    return denoised / influence_sum;
 }
 
 void main() {
     ivec2 sample_pos = ivec2(gl_GlobalInvocationID.xy);
-    vec4 lightmap = denoise_lightmap(sample_pos, push_constants.denoise_sigma, push_constants.denoise_k_sigma, push_constants.denoise_threshold);
+    vec2 uv = vec2(sample_pos + vec2(0.5)) / vec2(imageSize(in_image));
+    vec4 lightmap = vec4(denoise_lightmap(uv, imageSize(in_image)), 1.0);
 
     imageStore(out_image, sample_pos, lightmap);
 }
