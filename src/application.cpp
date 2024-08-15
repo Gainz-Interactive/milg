@@ -1,10 +1,7 @@
 #include "application.hpp"
-#include "audio.hpp"
-#include "event.hpp"
+#include "audio/audio.hpp"
 #include "events.hpp"
 #include "imgui.h"
-#include "layer.hpp"
-#include "logging.hpp"
 #include "swapchain.hpp"
 #include "vk_context.hpp"
 
@@ -12,6 +9,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <memory>
+#include <milg.hpp>
 
 namespace milg {
     Application *Application::s_instance = nullptr;
@@ -23,7 +21,6 @@ namespace milg {
         m_context     = VulkanContext::create(m_window);
         m_swapchain   = Swapchain::create(m_window, m_context);
         m_imgui_layer = ImGuiLayer::create(m_swapchain, m_window, m_context);
-        asset_store   = std::make_unique<AssetStore>();
         init_frame_resources();
 
         m_window->set_event_callback([this](Event &event) {
@@ -31,13 +28,12 @@ namespace milg {
         });
 
         audio::init();
-        audio::set_volume(.5f);
 
         auto bindir = std::filesystem::path(argv[0]).parent_path();
 
-        asset_store->add_search_path(bindir / "data");
-        asset_store->add_search_path("data");
-        asset_store->load_assets("data/assets.json");
+        asset_store::add_search_path(bindir / "data");
+        asset_store::add_search_path("data");
+        asset_store::load_assets("data/assets.json");
     }
 
     Application::~Application() {
@@ -51,7 +47,7 @@ namespace milg {
             delete layer;
         }
 
-        asset_store->unload_assets();
+        asset_store::unload_assets();
         audio::destroy();
     }
 
@@ -256,10 +252,6 @@ namespace milg {
 
     uint32_t Application::frames_per_second() const {
         return m_frames_per_second;
-    }
-
-    AssetStore &Application::get_asset_store() {
-        return *this->asset_store;
     }
 
     void Application::on_event(Event &event) {

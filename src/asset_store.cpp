@@ -1,15 +1,38 @@
-#include "asset_store.hpp"
-#include "error.hpp"
-#include "logging.hpp"
-
 #include <fstream>
+#include <milg/asset_store.hpp>
+#include <milg/error.hpp>
+#include <milg/logging.hpp>
 
-namespace milg {
-    void AssetStore::add_search_path(const std::string &path) {
-        this->search_paths.push_back(std::filesystem::path(path).lexically_normal());
+std::map<std::string, std::shared_ptr<milg::Asset>> assets;
+std::vector<std::filesystem::path>                  search_paths;
+
+namespace milg::asset_store {
+    void add_search_path(const std::string &path) {
+        search_paths.push_back(std::filesystem::path(path).lexically_normal());
     }
 
-    void AssetStore::load_assets(const std::string &path) {
+    std::shared_ptr<milg::Asset> get_asset(const std::string &name) {
+        auto iter = assets.find(name);
+        if (iter == assets.end()) {
+            return nullptr;
+        }
+
+        return iter->second;
+    }
+
+    std::map<std::string, std::shared_ptr<milg::Asset>> get_assets(milg::Asset::Type type) {
+        std::map<std::string, std::shared_ptr<milg::Asset>> ret;
+
+        for (auto &[name, asset] : assets) {
+            if (asset->get_type() == type) {
+                ret[name] = asset;
+            }
+        }
+
+        return ret;
+    }
+
+    void load_assets(const std::string &path) {
         auto stream = std::ifstream(path);
         auto json   = nlohmann::json::parse(stream);
 
@@ -28,12 +51,12 @@ namespace milg {
 
             MILG_DEBUG("Loading {}…", name);
 
-            for (const auto &search_path : this->search_paths) {
+            for (const auto &search_path : search_paths) {
                 try {
                     auto path  = search_path / definition["path"];
                     auto asset = Asset::Loader::load(type, path);
 
-                    this->assets.insert({name, asset});
+                    assets.insert({name, asset});
 
                     loaded = true;
 
@@ -49,7 +72,7 @@ namespace milg {
         }
     }
 
-    void AssetStore::unload_assets() {
-        this->assets.clear();
+    void unload_assets() {
+        assets.clear();
     }
-} // namespace milg
+} // namespace milg::asset_store

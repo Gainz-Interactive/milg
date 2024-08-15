@@ -1,11 +1,10 @@
 #include "texture.hpp"
 
-#include "logging.hpp"
-
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include <cstdint>
+#include <milg.hpp>
 
 namespace milg {
     std::shared_ptr<Texture> Texture::load_from_data(const std::shared_ptr<VulkanContext> &context,

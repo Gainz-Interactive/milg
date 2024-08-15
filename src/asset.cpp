@@ -1,7 +1,6 @@
-#include "asset.hpp"
-#include "error.hpp"
-
 #include <fstream>
+#include <milg/asset.hpp>
+#include <milg/error.hpp>
 
 namespace milg {
     Asset::Asset(Type type, char *data, std::size_t size) : type(type), data(data), size(size) {

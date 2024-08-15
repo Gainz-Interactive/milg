@@ -1,9 +1,9 @@
 #include "imgui_layer.hpp"
 #include "imgui.h"
-#include "logging.hpp"
 #include "swapchain.hpp"
 #include "window.hpp"
 #include <memory>
+#include <milg.hpp>
 
 namespace milg {
     std::shared_ptr<ImGuiLayer> ImGuiLayer::create(const std::shared_ptr<Swapchain>     &swapchain,

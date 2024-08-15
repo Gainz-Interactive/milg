@@ -1,6 +1,6 @@
 #pragma once
 
-#include "event.hpp"
+#include <milg/event.hpp>
 
 #include <cstdint>
 

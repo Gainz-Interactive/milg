@@ -6,14 +6,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/random.hpp>
 #include <memory>
+#include <milg.hpp>
 #include <vector>
 
 #include "application.hpp"
-#include "asset_store.hpp"
-#include "event.hpp"
 #include "events.hpp"
-#include "layer.hpp"
-#include "logging.hpp"
 #include "pipeline.hpp"
 #include "sprite_batch.hpp"
 #include "swapchain.hpp"
@@ -68,9 +65,8 @@ public:
     void on_attach() override {
         MILG_INFO("Initializing Grapchiks");
 
-        context           = Application::get().context();
-        auto &window      = Application::get().window();
-        auto &asset_store = Application::get().get_asset_store();
+        context      = Application::get().context();
+        auto &window = Application::get().window();
 
         this->emissive_buffer =
             Texture::create(context,
@@ -97,55 +93,54 @@ public:
             .mag_filter = VK_FILTER_NEAREST,
         };
         {
-            auto data            = asset_store.get_asset("map");
+            auto data            = asset_store::get_asset("map");
             this->albedo_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
         }
         {
-            auto data              = asset_store.get_asset("map_emissive");
+            auto data              = asset_store::get_asset("map_emissive");
             this->emissive_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
         }
         {
-            auto data           = asset_store.get_asset("noise");
+            auto data           = asset_store::get_asset("noise");
             this->noise_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
         }
         {
-            auto data           = asset_store.get_asset("light");
+            auto data           = asset_store::get_asset("light");
             this->light_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
         }
 
-        this->sprite_batch =
-            SpriteBatch::create(asset_store, context, albedo_buffer->format(), emissive_buffer->format(), 10000);
+        this->sprite_batch = SpriteBatch::create(context, albedo_buffer->format(), emissive_buffer->format(), 10000);
 
         this->pipeline_factory      = PipelineFactory::create(context);
         this->voronoi_seed_pipeline = this->pipeline_factory->create_compute_pipeline(
-            asset_store, "voronoi_seed", "voronoi_seed.comp.spv",
+            "voronoi_seed", "voronoi_seed.comp.spv",
             {PipelineOutputDescription{
                 .format = VK_FORMAT_R8G8B8A8_UNORM, .width = window->width(), .height = window->height()}},
             2);
         this->voronoi_pipeline = this->pipeline_factory->create_compute_pipeline(
-            asset_store, "voronoi", "voronoi.comp.spv",
+            "voronoi", "voronoi.comp.spv",
             {PipelineOutputDescription{
                 .format = VK_FORMAT_R8G8B8A8_UNORM, .width = window->width(), .height = window->height()}},
             2, sizeof(float) * 6);
         this->distance_field_pipeline = this->pipeline_factory->create_compute_pipeline(
-            asset_store, "distance_field", "distance_field.comp.spv",
+            "distance_field", "distance_field.comp.spv",
             {PipelineOutputDescription{
                 .format = VK_FORMAT_R8G8_UNORM, .width = window->width(), .height = window->height()}},
             2);
         this->noise_seed_pipeline = this->pipeline_factory->create_compute_pipeline(
-            asset_store, "noise_seed", "noise_seed.comp.spv",
+            "noise_seed", "noise_seed.comp.spv",
             {PipelineOutputDescription{
                 .format = VK_FORMAT_R8_UNORM, .width = noise_texture->width(), .height = noise_texture->height()}},
             2, sizeof(float));
         this->raytrace_pipeline = this->pipeline_factory->create_compute_pipeline(
-            asset_store, "raytrace", "raytrace.comp.spv",
+            "raytrace", "raytrace.comp.spv",
             {PipelineOutputDescription{
                  .format = VK_FORMAT_R16G16B16A16_SFLOAT, .width = window->width(), .height = window->height()},
              PipelineOutputDescription{
                  .format = VK_FORMAT_R16G16B16A16_SFLOAT, .width = window->width(), .height = window->height()}},
             6, sizeof(raytrace_pass_constants));
         this->composite_pipeline = this->pipeline_factory->create_compute_pipeline(
-            asset_store, "composite", "composite.comp.spv",
+            "composite", "composite.comp.spv",
             {PipelineOutputDescription{
                 .format = VK_FORMAT_R8G8B8A8_UNORM, .width = window->width(), .height = window->height()}},
             4, sizeof(composite_pass_constants));

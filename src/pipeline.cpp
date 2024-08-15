@@ -1,11 +1,9 @@
 #include "pipeline.hpp"
 
-#include "asset_store.hpp"
-#include "logging.hpp"
-
 #include <array>
 #include <cstdint>
 #include <fstream>
+#include <milg.hpp>
 #include <string>
 
 namespace milg {
@@ -103,7 +101,7 @@ namespace milg {
     }
 
     Pipeline *PipelineFactory::create_compute_pipeline(
-        AssetStore &asset_store, const std::string &name, const std::string &shader_id,
+        const std::string &name, const std::string &shader_id,
         const std::initializer_list<PipelineOutputDescription> &output_descriptions, uint32_t texture_input_count,
         uint32_t push_constant_size) {
         if (m_pipelines.find(name) != m_pipelines.end()) {
@@ -149,7 +147,7 @@ namespace milg {
         auto load_shader_module = [&](const std::string &shader_id) -> VkShaderModule {
             MILG_INFO("Loading shader module: {}", shader_id);
 
-            auto buffer = asset_store.get_asset(shader_id);
+            auto buffer = asset_store::get_asset(shader_id);
 
             const VkShaderModuleCreateInfo shader_module_info = {
                 .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,

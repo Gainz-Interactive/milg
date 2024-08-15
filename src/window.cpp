@@ -1,13 +1,12 @@
 #include "window.hpp"
-#include "event.hpp"
 #include "events.hpp"
-#include "logging.hpp"
 #include "vk_context.hpp"
 
 #include <SDL_events.h>
 #include <SDL_video.h>
 #include <cstdint>
 #include <memory>
+#include <milg.hpp>
 #include <vector>
 
 #include <SDL2/SDL.h>
