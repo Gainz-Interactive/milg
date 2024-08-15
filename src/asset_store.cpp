@@ -7,8 +7,8 @@ std::map<std::string, std::shared_ptr<milg::Asset>> assets;
 std::vector<std::filesystem::path>                  search_paths;
 
 namespace milg::asset_store {
-    void add_search_path(const std::string &path) {
-        search_paths.push_back(std::filesystem::path(path).lexically_normal());
+    void add_search_path(const std::filesystem::path &path) {
+        search_paths.push_back(path);
     }
 
     std::shared_ptr<milg::Asset> get_asset(const std::string &name) {

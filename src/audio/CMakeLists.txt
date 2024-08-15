@@ -17,4 +17,9 @@ target_include_directories(
     PRIVATE ${voclib_SOURCE_DIR}
     PUBLIC ${miniaudio_SOURCE_DIR}
 )
-target_link_libraries(milg_audio PUBLIC libmilg spdlog::spdlog)
+target_link_libraries(
+    milg_audio
+    PUBLIC libmilg
+    PUBLIC SDL2::SDL2
+    PUBLIC spdlog::spdlog
+)

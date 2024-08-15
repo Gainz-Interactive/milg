@@ -18,7 +18,7 @@ FetchContent_Declare(
   GIT_TAG release-2.30.5
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
-  FIND_PACKAGE_ARGS 2.30.6 NAMES SDL2
+  FIND_PACKAGE_ARGS 2.30.5 NAMES SDL2
 )
 
 FetchContent_Declare(
@@ -27,6 +27,7 @@ FetchContent_Declare(
   GIT_TAG 1.3.270
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
+  FIND_PACKAGE_ARGS 1.3.270
 )
 
 FetchContent_Declare(
@@ -111,8 +112,8 @@ FetchContent_MakeAvailable(
     volk
 )
 
-find_package(Vulkan)
-find_package(VulkanUtilityLibraries)
+find_package(Vulkan REQUIRED)
+find_package(VulkanUtilityLibraries REQUIRED)
 
 add_subdirectory(data)
 add_subdirectory(include)

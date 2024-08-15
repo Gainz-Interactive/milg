@@ -7,7 +7,7 @@
 #include <memory>
 
 namespace milg::asset_store {
-    void add_search_path(const std::string &path);
+    void add_search_path(const std::filesystem::path &path);
 
     std::shared_ptr<Asset>                        get_asset(const std::string &name);
     std::map<std::string, std::shared_ptr<Asset>> get_assets(Asset::Type type);
