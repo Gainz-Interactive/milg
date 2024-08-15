@@ -51,7 +51,7 @@ namespace milg {
         audio::destroy();
     }
 
-    void Application::run() {
+    void Application::run(float min_frametime) {
         auto     current_time   = std::chrono::high_resolution_clock::now();
         uint32_t elapsed_frames = 0;
         float    elapsed_time   = 0.0f;
@@ -62,12 +62,14 @@ namespace milg {
                 std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
             current_time = new_time;
 
-            // while (delta_time < 0.0166666) {
-            //     new_time = std::chrono::high_resolution_clock::now();
-            //     delta_time +=
-            //         std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
-            //     current_time = new_time;
-            // }
+            if (min_frametime != 0.0f) {
+                while (delta_time < min_frametime) {
+                    new_time = std::chrono::high_resolution_clock::now();
+                    delta_time +=
+                        std::chrono::duration<float, std::chrono::seconds::period>(new_time - current_time).count();
+                    current_time = new_time;
+                }
+            }
 
             if (!m_window->poll_events()) {
                 close();
