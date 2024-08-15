@@ -16,7 +16,7 @@ layout(push_constant) uniform PushConstants {
     float time;
     float bounce_factor;
     float blend_factor;
-    float _pad;
+    float scale_modifier;
 } push_constants;
 
 const float samples_per_pixel = 16.0;
@@ -27,14 +27,14 @@ const float max_steps = 128.0;
 #define V2F16(v) ((v.y * float(0.0039215689)) + v.x)
 
 float falloff(float dist) {
-    float attenuation = clamp(1.0 - ((dist * dist) * push_constants.inverse_resolution.y * 0.005), 0.0, 1.0);
+    float attenuation = clamp(1.0 - ((dist * dist) * push_constants.inverse_resolution.y * 0.005 / push_constants.scale_modifier), 0.0, 1.0);
     // attenuation = 1.0f;
 
     return attenuation;
 }
 
 float epsilon() {
-    return 0.25 * max(push_constants.inverse_resolution.x, push_constants.inverse_resolution.y);
+    return 0.25 * push_constants.scale_modifier * max(push_constants.inverse_resolution.x, push_constants.inverse_resolution.y);
 }
 
 void main() {

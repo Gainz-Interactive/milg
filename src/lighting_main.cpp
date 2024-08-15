@@ -30,7 +30,7 @@ public:
         float     time               = 0.0f;
         float     bounce_factor      = 1.0f;
         float     blend_factor       = 1.0 - 0.6f;
-        float     _pad               = 0.0f;
+        float     scale_modifier     = 0.0f;
     } raytrace_pass_constants;
 
     struct {
@@ -396,6 +396,7 @@ public:
             raytrace_pass_constants.inverse_resolution = {1.0f / output->width(), 1.0f / output->height()};
             raytrace_pass_constants.resolution         = {output->width(), output->height()};
             raytrace_pass_constants.time               = time;
+            raytrace_pass_constants.scale_modifier     = rt_scale;
 
             context->device_table().vkCmdDispatch(command_buffer, output->width() / 16, output->height() / 16, 1);
             pipeline->end(context, command_buffer);
