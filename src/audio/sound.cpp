@@ -1,7 +1,7 @@
 #include "sound.hpp"
 #include "engine.hpp"
-#include "error.hpp"
 
+#include <milg.hpp>
 #include <stdexcept>
 
 static const ma_uint32 DEFAULT_FLAGS = MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT;

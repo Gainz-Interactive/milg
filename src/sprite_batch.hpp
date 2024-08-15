@@ -1,6 +1,5 @@
 #pragma once
 
-#include "asset_store.hpp"
 #include "buffer.hpp"
 #include "texture.hpp"
 #include "vk_context.hpp"
@@ -8,6 +7,7 @@
 #include <cstdint>
 #include <glm/glm.hpp>
 #include <memory>
+#include <milg.hpp>
 #include <unordered_map>
 #include <vector>
 
@@ -31,8 +31,7 @@ namespace milg {
     public:
         constexpr static uint32_t TEXTURE_DESCRIPTOR_BINDING_COUNT = 1024;
 
-        static std::shared_ptr<SpriteBatch> create(AssetStore                           &asset_store,
-                                                   const std::shared_ptr<VulkanContext> &context,
+        static std::shared_ptr<SpriteBatch> create(const std::shared_ptr<VulkanContext> &context,
                                                    VkFormat albdedo_render_format, VkFormat emissive_render_format,
                                                    uint32_t capacity);
 

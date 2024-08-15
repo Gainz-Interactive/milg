@@ -1,21 +1,12 @@
+add_subdirectory(audio)
+
 set(TARGET_NAME milg)
 set(
     SOURCE_FILES
     "application.cpp"
     "asset.cpp"
-    "asset.hpp"
     "asset_store.cpp"
-    "asset_store.hpp"
-    "audio.hpp"
-    "audio/engine.cpp"
-    "audio/engine.hpp"
-    "audio/node.hpp"
-    "audio/sound.cpp"
-    "audio/sound.hpp"
-    "audio/vocoder_node.cpp"
-    "audio/vocoder_node.hpp"
     "buffer.cpp"
-    "error.hpp"
     "imgui_layer.cpp"
     "layer.cpp"
     "logging.cpp"
@@ -48,12 +39,9 @@ target_include_directories(
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${imgui_SOURCE_DIR}
-    ${miniaudio_SOURCE_DIR}
-    ${voclib_SOURCE_DIR}
     ${vma_SOURCE_DIR}/include
     ${stb_SOURCE_DIR}
     ${glm_INCLUDE_DIR}
-    ${nlohmann_json_INCLUDE_DIR}
 )
 target_link_libraries(
     ${TARGET_NAME} PRIVATE
@@ -63,4 +51,6 @@ target_link_libraries(
     spdlog::spdlog
     glm::glm
     nlohmann_json::nlohmann_json
+    libmilg
+    milg_audio
 )

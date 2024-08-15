@@ -115,4 +115,5 @@ find_package(Vulkan)
 find_package(VulkanUtilityLibraries)
 
 add_subdirectory(data)
+add_subdirectory(include)
 add_subdirectory(src)

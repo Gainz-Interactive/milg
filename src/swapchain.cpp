@@ -1,8 +1,8 @@
 #include "swapchain.hpp"
-#include "logging.hpp"
 
 #include "window.hpp"
 #include <cstdint>
+#include <milg.hpp>
 
 namespace milg {
     std::shared_ptr<Swapchain> Swapchain::create(const std::unique_ptr<Window>        &window,

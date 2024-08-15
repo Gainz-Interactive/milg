@@ -1,4 +1,4 @@
-#include "logging.hpp"
+#include <milg/logging.hpp>
 
 namespace milg {
     std::shared_ptr<spdlog::logger> Logging::s_logger = spdlog::stdout_color_mt("MILG");

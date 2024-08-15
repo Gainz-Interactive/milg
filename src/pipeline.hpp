@@ -6,10 +6,10 @@
 #include <initializer_list>
 #include <map>
 #include <memory>
+#include <milg.hpp>
 #include <string>
 #include <vector>
 
-#include "asset_store.hpp"
 #include "texture.hpp"
 #include "vk_context.hpp"
 
@@ -51,8 +51,7 @@ namespace milg {
 
         ~PipelineFactory();
 
-        Pipeline *create_compute_pipeline(AssetStore &asset_store, const std::string &name,
-                                          const std::string                                      &shader_id,
+        Pipeline *create_compute_pipeline(const std::string &name, const std::string &shader_id,
                                           const std::initializer_list<PipelineOutputDescription> &output_descriptions,
                                           uint32_t texture_input_count, uint32_t push_constant_size = 0);
         void      begin_frame(VkCommandBuffer command_buffer);

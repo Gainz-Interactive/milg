@@ -1,6 +1,5 @@
 #include "sprite_batch.hpp"
 
-#include "logging.hpp"
 #include "vk_context.hpp"
 
 #include <array>
@@ -25,13 +24,12 @@ namespace milg {
         return shader_module;
     }
 
-    std::shared_ptr<SpriteBatch> SpriteBatch::create(AssetStore                           &asset_store,
-                                                     const std::shared_ptr<VulkanContext> &context,
+    std::shared_ptr<SpriteBatch> SpriteBatch::create(const std::shared_ptr<VulkanContext> &context,
                                                      VkFormat albdedo_render_format, VkFormat emissive_render_format,
                                                      uint32_t capacity) {
         MILG_INFO("Creating sprite batch with capacity: {}", capacity);
 
-        auto vertex_shader_data = asset_store.get_asset("sprite_batch.vert.spv");
+        auto vertex_shader_data = asset_store::get_asset("sprite_batch.vert.spv");
         if (!vertex_shader_data) {
             MILG_ERROR("Vertex shader not loaded");
 
@@ -40,7 +38,7 @@ namespace milg {
         auto vertex_shader_module =
             load_shader_module(vertex_shader_data->get_data(), vertex_shader_data->get_size(), context);
 
-        auto fragment_shader_data = asset_store.get_asset("sprite_batch.frag.spv");
+        auto fragment_shader_data = asset_store::get_asset("sprite_batch.frag.spv");
         if (!fragment_shader_data) {
             MILG_ERROR("Fragment shader not loaded");
 
