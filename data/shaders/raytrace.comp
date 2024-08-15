@@ -25,8 +25,6 @@ const float samples_per_pixel = 16.0;
 const float max_steps = 128.0;
 
 #define dot2(x) dot(x, x)
-#define TAU 6.2831853071795864769252867665590
-#define V2F16(v) ((v.y * float(0.0039215689)) + v.x)
 
 float falloff(float dist) {
     float attenuation = clamp(1.0 - ((dist * dist) * push_constants.inverse_resolution.y * 0.005 / push_constants.scale_modifier), 0.0, 1.0);

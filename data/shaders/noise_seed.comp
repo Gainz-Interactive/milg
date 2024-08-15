@@ -11,8 +11,6 @@ layout(push_constant) uniform PushConstants {
     float time;
 } push_constants;
 
-#define TAU 6.2831853071795864769252867665590
-
 void main() {
     ivec2 sample_pos = ivec2(gl_GlobalInvocationID.xy);
     float noise = imageLoad(in_image, sample_pos).r;
