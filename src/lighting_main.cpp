@@ -43,9 +43,10 @@ public:
     } composite_pass_constants;
 
     struct {
-        float denoise_sigma     = 5.0f;
-        float denoise_k_sigma   = 1.0f;
-        float denoise_threshold = 0.05f;
+        float sample_num            = 80.0f;
+        float distribution_bias     = 0.6f;
+        float pixel_multiplier      = 1.5f;
+        float inverse_hue_tolerance = 30.0f;
     } rt_upscale_pass_constants;
 
     std::shared_ptr<Texture> albedo_buffer   = nullptr;
@@ -494,9 +495,11 @@ public:
                 ImGui::SliderFloat("Exposure", &composite_pass_constants.exposure, 0.0f, 10.0f);
 
                 ImGui::SeparatorText("Denoise Options");
-                ImGui::SliderFloat("Denoise Sigma", &rt_upscale_pass_constants.denoise_sigma, 0.0f, 10.0f);
-                ImGui::SliderFloat("Denoise K Sigma", &rt_upscale_pass_constants.denoise_k_sigma, 0.0f, 10.0f);
-                ImGui::SliderFloat("Denoise Threshold", &rt_upscale_pass_constants.denoise_threshold, 0.0f, 1.0f);
+                ImGui::SliderFloat("Sample Count", &rt_upscale_pass_constants.sample_num, 1.0f, 120.0f);
+                ImGui::SliderFloat("Distribution Bias", &rt_upscale_pass_constants.distribution_bias, 0.0f, 1.0f);
+                ImGui::SliderFloat("Pixel Multiplier", &rt_upscale_pass_constants.pixel_multiplier, 1.0f, 3.0f);
+                ImGui::SliderFloat("Iverse Hue Tolerance", &rt_upscale_pass_constants.inverse_hue_tolerance, 2.0f,
+                                   30.0f);
 
                 ImGui::EndTabItem();
             }
