@@ -21,6 +21,9 @@
 using namespace milg;
 
 constexpr uint32_t WORKGROUP_SIZE = 32;
+uint32_t           dispatch_size(uint32_t work_size) {
+    return (work_size + WORKGROUP_SIZE - 1) / WORKGROUP_SIZE;
+}
 
 class GraphicsLayer : public Layer {
 public:
@@ -272,8 +275,8 @@ public:
             pipeline->bind_texture(context, command_buffer, 0, emissive_buffer);
             pipeline->bind_texture(context, command_buffer, 1, output);
 
-            context->device_table().vkCmdDispatch(command_buffer, output->width() / WORKGROUP_SIZE,
-                                                  output->height() / WORKGROUP_SIZE, 1);
+            context->device_table().vkCmdDispatch(command_buffer, dispatch_size(output->width()),
+                                                  dispatch_size(output->height()), 1);
             pipeline->end(context, command_buffer);
         }
 
@@ -306,8 +309,8 @@ public:
                 };
 
                 pipeline->set_push_constants(context, command_buffer, sizeof(push_constants), &push_constants);
-                context->device_table().vkCmdDispatch(command_buffer, output->width() / WORKGROUP_SIZE,
-                                                      output->height() / WORKGROUP_SIZE, 1);
+                context->device_table().vkCmdDispatch(command_buffer, dispatch_size(output->width()),
+                                                      dispatch_size(output->height()), 1);
 
                 output->transition_layout(command_buffer, VK_IMAGE_LAYOUT_GENERAL);
                 output2->transition_layout(command_buffer, VK_IMAGE_LAYOUT_GENERAL);
@@ -327,8 +330,8 @@ public:
             pipeline->bind_texture(context, command_buffer, 0, distance_buffer);
             pipeline->bind_texture(context, command_buffer, 1, output);
 
-            context->device_table().vkCmdDispatch(command_buffer, output->width() / WORKGROUP_SIZE,
-                                                  output->height() / WORKGROUP_SIZE, 1);
+            context->device_table().vkCmdDispatch(command_buffer, dispatch_size(output->width()),
+                                                  dispatch_size(output->height()), 1);
             pipeline->end(context, command_buffer);
         }
 
@@ -350,8 +353,8 @@ public:
             };
 
             pipeline->set_push_constants(context, command_buffer, sizeof(push_constants), &push_constants);
-            context->device_table().vkCmdDispatch(command_buffer, output->width() / WORKGROUP_SIZE,
-                                                  output->height() / WORKGROUP_SIZE, 1);
+            context->device_table().vkCmdDispatch(command_buffer, dispatch_size(output->width()),
+                                                  dispatch_size(output->height()), 1);
             pipeline->end(context, command_buffer);
         }
 
@@ -404,8 +407,8 @@ public:
             raytrace_pass_constants.time               = time;
             raytrace_pass_constants.scale_modifier     = rt_scale;
 
-            context->device_table().vkCmdDispatch(command_buffer, output->width() / WORKGROUP_SIZE,
-                                                  output->height() / WORKGROUP_SIZE, 1);
+            context->device_table().vkCmdDispatch(command_buffer, dispatch_size(output->width()),
+                                                  dispatch_size(output->height()), 1);
             pipeline->end(context, command_buffer);
         }
 
@@ -424,8 +427,8 @@ public:
 
             pipeline->set_push_constants(context, command_buffer, sizeof(rt_upscale_pass_constants),
                                          &rt_upscale_pass_constants);
-            context->device_table().vkCmdDispatch(command_buffer, denoised_output->width() / WORKGROUP_SIZE,
-                                                  denoised_output->height() / WORKGROUP_SIZE, 1);
+            context->device_table().vkCmdDispatch(command_buffer, dispatch_size(denoised_output->width()),
+                                                  dispatch_size(denoised_output->height()), 1);
             pipeline->end(context, command_buffer);
 
             denoised_output->transition_layout(command_buffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
@@ -449,8 +452,8 @@ public:
             pipeline->bind_texture(context, command_buffer, 2, rt_output);
             pipeline->bind_texture(context, command_buffer, 3, output);
 
-            context->device_table().vkCmdDispatch(command_buffer, output->width() / WORKGROUP_SIZE,
-                                                  output->height() / WORKGROUP_SIZE, 1);
+            context->device_table().vkCmdDispatch(command_buffer, dispatch_size(output->width()),
+                                                  dispatch_size(output->height()), 1);
             pipeline->end(context, command_buffer);
 
             output->transition_layout(command_buffer, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
