@@ -4,19 +4,12 @@ layout(local_size_x = 16, local_size_y = 16) in;
 
 layout(rgba8, set = 0, binding = 0) uniform readonly image2D in_image;
 layout(rgba8, set = 0, binding = 1) uniform readonly image2D in_emissive;
-layout(rgba16, set = 0, binding = 2) uniform readonly image2D in_lightmap;
+layout(rgba16f, set = 0, binding = 2) uniform readonly image2D in_lightmap;
 
 layout(rgba8, set = 0, binding = 3) uniform writeonly image2D out_image;
 
-#define INV_SQRT_OF_2PI 0.39894228040143267793994605993439
-#define INV_PI 0.31830988618379067153776752674503
-
 layout(push_constant) uniform PushConstants {
-    float enable_denoise;
     float exposure;
-    float denoise_sigma;
-    float denoise_k_sigma;
-    float denoise_threshold;
 } push_constants;
 
 const mat3 ACES_input_mat = mat3(
@@ -47,41 +40,6 @@ vec3 ACES_fitted(vec3 color) {
     return color;
 }
 
-vec4 denoise_lightmap(ivec2 sample_pos, float sigma, float k_sigma, float threshold) {
-    float radius = floor(k_sigma * sigma + 0.5);
-    float rad_q = radius * radius;
-
-    float inv_sigma_qx2 = .5 / (sigma * sigma);
-    float inv_sigma_qx2PI = INV_PI * inv_sigma_qx2;
-
-    float inv_threshold_sqx2 = .5 / (threshold * threshold);
-    float inv_threshold_sqrt2PI = INV_SQRT_OF_2PI / threshold;
-
-    vec4 center = imageLoad(in_lightmap, sample_pos);
-
-    float z_buff = 0.0;
-    vec4 a_buff = vec4(0.0);
-
-    for (float x = -radius; x <= radius; x++) {
-        float pt = sqrt(rad_q - x * x);
-        for (float y = -pt; y <= pt; y++) {
-            vec2 d = vec2(x, y);
-
-            float blur_factor = exp(-dot(d, d) * inv_sigma_qx2) * inv_sigma_qx2PI;
-
-            vec4 walk_px = imageLoad(in_lightmap, sample_pos + ivec2(d));
-
-            vec4 d_c = walk_px - center;
-            float delta_factor = exp(-dot(d_c, d_c) * inv_threshold_sqx2) * inv_threshold_sqrt2PI * blur_factor;
-
-            z_buff += delta_factor;
-            a_buff += delta_factor * walk_px;
-        }
-    }
-
-    return a_buff / z_buff;
-}
-
 void main() {
     ivec2 sample_pos = ivec2(gl_GlobalInvocationID.xy);
     vec2 uv = vec2(sample_pos + vec2(0.5)) / vec2(imageSize(in_image));
@@ -89,12 +47,7 @@ void main() {
 
     vec4 scene = imageLoad(in_image, sample_pos);
     vec4 emissive = imageLoad(in_emissive, sample_pos);
-    vec4 lightmap = vec4(1.0);
-    if (push_constants.enable_denoise == 1.0) {
-        lightmap = denoise_lightmap(sample_pos, push_constants.denoise_sigma, push_constants.denoise_k_sigma, push_constants.denoise_threshold);
-    } else {
-        lightmap = imageLoad(in_lightmap, sample_pos);
-    }
+    vec4 lightmap = imageLoad(in_lightmap, sample_pos);
 
     vec3 scene_color = mix(scene.rgb, emissive.rgb, emissive.a);
     scene_color = scene.rgb;

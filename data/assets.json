@@ -46,5 +46,8 @@
     },
     "voronoi_seed.comp.spv": {
         "path": "shaders/voronoi_seed.comp.spv"
+    },
+    "rt_upscale.comp.spv": {
+        "path": "shaders/rt_upscale.comp.spv"
     }
 }
