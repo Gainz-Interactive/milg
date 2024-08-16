@@ -9,8 +9,8 @@
 #include <milg.hpp>
 #include <vector>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_vulkan.h>
+#include <SDL.h>
+#include <SDL_vulkan.h>
 
 namespace milg {
     std::unique_ptr<Window> Window::create(const WindowCreateInfo &info) {

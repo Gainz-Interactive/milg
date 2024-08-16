@@ -11,7 +11,7 @@
 #define MINIAUDIO_IMPLEMENTATION
 #endif
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <miniaudio.h>
 #include <stdexcept>
 
