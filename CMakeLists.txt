@@ -15,7 +15,7 @@ set(SDL2_DISABLE_INSTALL TRUE CACHE BOOL "Disable installation of SDL2")
 FetchContent_Declare(
   sdl
   GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-  GIT_TAG release-2.30.6
+  GIT_TAG release-2.30.5
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
   FIND_PACKAGE_ARGS 2.30.6 NAMES SDL2
