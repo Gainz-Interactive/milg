@@ -13,6 +13,7 @@ add_library(
 )
 target_include_directories(
     milg_audio
+    SYSTEM
     PRIVATE ${imgui_SOURCE_DIR}
     PRIVATE ${voclib_SOURCE_DIR}
     PUBLIC ${miniaudio_SOURCE_DIR}
