@@ -13,12 +13,12 @@ set(SDL_STATIC TRUE CACHE BOOL "Build SDL2 as a static library")
 set(SDL_TEST FALSE CACHE BOOL "Build the SDL2_test library")
 set(SDL2_DISABLE_INSTALL TRUE CACHE BOOL "Disable installation of SDL2")
 FetchContent_Declare(
-  sdl
-  GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
-  GIT_TAG release-2.30.5
-  GIT_SHALLOW TRUE
-  GIT_PROGRESS TRUE
-  FIND_PACKAGE_ARGS 2.30.5 NAMES SDL2
+    SDL2
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+    GIT_TAG release-2.30.5
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+    FIND_PACKAGE_ARGS 2.30.5 CONFIG
 )
 
 FetchContent_Declare(
@@ -27,7 +27,7 @@ FetchContent_Declare(
   GIT_TAG 1.3.270
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
-  FIND_PACKAGE_ARGS 1.3.270
+  FIND_PACKAGE_ARGS 1.3.270 CONFIG
 )
 
 FetchContent_Declare(
@@ -51,7 +51,7 @@ FetchContent_Declare(
   GIT_TAG v1.14.1
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
-  FIND_PACKAGE_ARGS 1.14.1
+  FIND_PACKAGE_ARGS 1.14.1 CONFIG
 )
 
 FetchContent_Declare(
@@ -60,18 +60,19 @@ FetchContent_Declare(
   GIT_TAG 1.0.1
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
-  FIND_PACKAGE_ARGS 1.0.1
+  FIND_PACKAGE_ARGS 1.0.1 CONFIG
 )
 
 set(VMA_STATIC_VULKAN_FUNCTIONS FORCE BOOL OFF)
 set(VMA_DYNAMIC_VULKAN_FUNCTIONS FORCE BOOL ON)
 FetchContent_Declare(
-  vma
+  VulkanMemoryAllocator
   GIT_REPOSITORY
   https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator.git
   GIT_TAG v3.1.0
   GIT_SHALLOW TRUE
   GIT_PROGRESS TRUE
+  FIND_PACKAGE_ARGS 3.1.0 CONFIG NAMES
 )
 
 FetchContent_Declare(
@@ -96,7 +97,7 @@ FetchContent_Declare(
     GIT_TAG v3.11.3
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
-    FIND_PACKAGE_ARGS 3.11.3
+    FIND_PACKAGE_ARGS 3.11.3 CONFIG
 )
 
 FetchContent_MakeAvailable(
@@ -104,16 +105,17 @@ FetchContent_MakeAvailable(
     imgui
     miniaudio
     nlohmann_json
-    sdl
+    SDL2
     spdlog
     stb
-    vma
+    VulkanMemoryAllocator
     voclib
     volk
 )
 
 find_package(Vulkan REQUIRED)
-find_package(VulkanUtilityLibraries REQUIRED)
+find_package(VulkanMemoryAllocator CONFIG REQUIRED)
+find_package(VulkanUtilityLibraries CONFIG REQUIRED)
 
 add_subdirectory(data)
 add_subdirectory(include)

@@ -47,9 +47,10 @@ target_link_libraries(
     SDL2::SDL2
     volk::volk
     Vulkan::UtilityHeaders
-    spdlog::spdlog
-    glm::glm
+    spdlog::spdlog_header_only
+    glm::glm-header-only
     nlohmann_json::nlohmann_json
+    GPUOpen::VulkanMemoryAllocator
     libmilg
     milg_audio
 )
