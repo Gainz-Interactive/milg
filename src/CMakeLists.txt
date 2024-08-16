@@ -54,3 +54,9 @@ target_link_libraries(
     libmilg
     milg_audio
 )
+
+if(MSVC)
+    target_compile_options(${TARGET_NAME} PRIVATE /W3)
+else()
+    target_compile_options(${TARGET_NAME} PRIVATE -Wall)
+endif()
