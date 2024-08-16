@@ -12,7 +12,7 @@ namespace milg {
     class ImGuiLayer {
     public:
         static std::shared_ptr<ImGuiLayer> create(const std::shared_ptr<class Swapchain> &swapchain,
-                                                  const std::unique_ptr<class Window>    &window,
+                                                  const std::unique_ptr<struct Window>   &window,
                                                   const std::shared_ptr<VulkanContext>   &context);
 
         ~ImGuiLayer();

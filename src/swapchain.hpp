@@ -15,7 +15,7 @@ namespace milg {
 
     class Swapchain {
     public:
-        static std::shared_ptr<Swapchain> create(const std::unique_ptr<class Window>  &window,
+        static std::shared_ptr<Swapchain> create(const std::unique_ptr<struct Window> &window,
                                                  const std::shared_ptr<VulkanContext> &context);
 
         ~Swapchain();

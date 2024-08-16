@@ -21,7 +21,7 @@
 namespace milg {
     class VulkanContext {
     public:
-        static std::shared_ptr<VulkanContext> create(const std::unique_ptr<class Window> &window);
+        static std::shared_ptr<VulkanContext> create(const std::unique_ptr<struct Window> &window);
 
         ~VulkanContext();
 
