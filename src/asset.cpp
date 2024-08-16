@@ -3,7 +3,7 @@
 #include <milg/error.hpp>
 
 namespace milg {
-    Asset::Asset(Type type, char *data, std::size_t size) : type(type), data(data), size(size) {
+    Asset::Asset(Type type, char *data, std::size_t size) : data(data), size(size), type(type) {
     }
 
     Asset::~Asset() {

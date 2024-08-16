@@ -11,7 +11,7 @@ namespace milg {
                                                    const std::shared_ptr<VulkanContext> &context) {
 
         MILG_INFO("Initializing ImGui context");
-        ImGuiContext *imgui_context = ImGui::CreateContext();
+        ImGui::CreateContext();
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         ImGui_ImplSDL2_InitForVulkan(window->handle());
 
