@@ -27,12 +27,18 @@ namespace milg {
         const std::shared_ptr<graphics::VulkanContext> &context() const;
         const std::shared_ptr<graphics::Swapchain>     &swapchain() const;
 
+        bool is_key_down(int32_t scan_code) const;
+        bool is_mouse_button_down(int32_t button) const;
+
         VkCommandBuffer aquire_command_buffer();
 
         uint32_t frames_per_second() const;
 
     private:
         static Application *s_instance;
+
+        std::array<bool, 512> m_keystates           = {};
+        std::array<bool, 10>  m_mouse_button_states = {};
 
         std::unique_ptr<Window>                  m_window      = nullptr;
         std::shared_ptr<graphics::VulkanContext> m_context     = nullptr;
