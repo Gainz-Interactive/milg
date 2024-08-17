@@ -4,14 +4,11 @@
 layout(location = 0) in vec4 in_position_size;
 layout(location = 1) in vec4 in_uv;
 layout(location = 2) in vec4 in_color;
-layout(location = 3) in vec2 in_rotation_emission;
-layout(location = 4) in vec2 in_texture_indices;
+layout(location = 3) in vec2 in_rotation_texture_index;
 
-layout(location = 1) out vec2 frag_uv;
-layout(location = 2) out vec4 frag_color;
-layout(location = 3) out float out_emission_strength;
-layout(location = 4) flat out uint out_texture_id;
-layout(location = 5) flat out uint out_emissive_texture_id;
+layout(location = 0) out vec2 frag_uv;
+layout(location = 1) out vec4 frag_color;
+layout(location = 2) flat out uint out_texture_id;
 
 layout(push_constant) uniform PushConstants {
     mat4 view_proj;
@@ -34,7 +31,7 @@ void main() {
 
     vec2 pos = positions[corner_index];
     pos *= in_position_size.zw;
-    pos = rotate(pos, in_rotation_emission.x);
+    pos = rotate(pos, in_rotation_texture_index.x);
 
     pos += in_position_size.xy;
 
@@ -44,7 +41,5 @@ void main() {
 
     frag_uv = uvs[corner_index];
     frag_color = in_color;
-    out_emission_strength = in_rotation_emission.y;
-    out_texture_id = uint(in_texture_indices.x);
-    out_emissive_texture_id = uint(in_texture_indices.y);
+    out_texture_id = uint(in_rotation_texture_index.y);
 }
