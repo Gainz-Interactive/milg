@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <milg.hpp>
 
-namespace milg {
+namespace milg::graphics {
     std::shared_ptr<Texture> Texture::load_from_data(const std::shared_ptr<VulkanContext> &context,
                                                      const TextureCreateInfo &create_info, const char *buf,
                                                      std::size_t size) {
@@ -470,4 +470,4 @@ namespace milg {
     uint32_t Texture::layer_count() const {
         return m_layer_count;
     }
-} // namespace milg
+} // namespace milg::graphics

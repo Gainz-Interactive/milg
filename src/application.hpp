@@ -5,8 +5,9 @@
 #include <milg.hpp>
 #include <vector>
 
+#include "graphics/swapchain.hpp"
+#include "graphics/vk_context.hpp"
 #include "imgui_layer.hpp"
-#include "vk_context.hpp"
 #include "window.hpp"
 
 namespace milg {
@@ -22,9 +23,9 @@ namespace milg {
 
         static Application &get();
 
-        const std::unique_ptr<Window>          &window() const;
-        const std::shared_ptr<VulkanContext>   &context() const;
-        const std::shared_ptr<class Swapchain> &swapchain() const;
+        const std::unique_ptr<Window>                  &window() const;
+        const std::shared_ptr<graphics::VulkanContext> &context() const;
+        const std::shared_ptr<graphics::Swapchain>     &swapchain() const;
 
         VkCommandBuffer aquire_command_buffer();
 
@@ -33,12 +34,12 @@ namespace milg {
     private:
         static Application *s_instance;
 
-        std::unique_ptr<Window>              m_window      = nullptr;
-        std::shared_ptr<class VulkanContext> m_context     = nullptr;
-        std::shared_ptr<class Swapchain>     m_swapchain   = nullptr;
-        std::shared_ptr<ImGuiLayer>          m_imgui_layer = nullptr;
-        std::vector<Layer *>                 m_layers      = {};
-        bool                                 m_running     = true;
+        std::unique_ptr<Window>                  m_window      = nullptr;
+        std::shared_ptr<graphics::VulkanContext> m_context     = nullptr;
+        std::shared_ptr<graphics::Swapchain>     m_swapchain   = nullptr;
+        std::shared_ptr<ImGuiLayer>              m_imgui_layer = nullptr;
+        std::vector<Layer *>                     m_layers      = {};
+        bool                                     m_running     = true;
 
         uint32_t m_frames_per_second = 0;
 

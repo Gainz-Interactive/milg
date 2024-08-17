@@ -19,9 +19,13 @@
     } while (0)
 
 namespace milg {
+    class Window;
+}
+
+namespace milg::graphics {
     class VulkanContext {
     public:
-        static std::shared_ptr<VulkanContext> create(const std::unique_ptr<struct Window> &window);
+        static std::shared_ptr<VulkanContext> create(const std::unique_ptr<Window> &window);
 
         ~VulkanContext();
 
@@ -59,4 +63,4 @@ namespace milg {
 
         VkCommandPool m_command_pool = VK_NULL_HANDLE;
     };
-} // namespace milg
+} // namespace milg::graphics

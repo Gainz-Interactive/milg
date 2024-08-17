@@ -1,22 +1,28 @@
 add_subdirectory(audio)
 
 set(TARGET_NAME milg)
+
+set(
+    GRAPHICS_SOURCE_FILES
+    "graphics/buffer.cpp"
+    "graphics/swapchain.cpp"
+    "graphics/texture.cpp"
+    "graphics/vk_context.cpp"
+    "graphics/pipeline.cpp"
+    "graphics/sprite_batch.cpp"
+)
+
 set(
     SOURCE_FILES
     "application.cpp"
     "asset.cpp"
     "asset_store.cpp"
-    "buffer.cpp"
     "imgui_layer.cpp"
     "layer.cpp"
     "logging.cpp"
     "main.cpp"
-    "sprite_batch.cpp"
-    "swapchain.cpp"
-    "texture.cpp"
-    "vk_context.cpp"
     "window.cpp"
-    "pipeline.cpp"
+    "${GRAPHICS_SOURCE_FILES}"
     "${imgui_SOURCE_DIR}/imgui.cpp"
     "${imgui_SOURCE_DIR}/imgui_draw.cpp"
     "${imgui_SOURCE_DIR}/imgui_demo.cpp"

@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace milg {
+namespace milg::graphics {
     struct Sprite {
         glm::vec2 position               = {0.0f, 0.0f};
         glm::vec2 size                   = {0.0f, 0.0f};
@@ -91,4 +91,4 @@ namespace milg {
 
         SpriteBatch() = default;
     };
-} // namespace milg
+} // namespace milg::graphics

@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <fstream>
 
-namespace milg {
+namespace milg::graphics {
     VkShaderModule load_shader_module(char *data, std::size_t size, const std::shared_ptr<VulkanContext> &context) {
 
         const VkShaderModuleCreateInfo shader_module_info = {
@@ -560,4 +560,4 @@ namespace milg {
         m_context->device_table().vkDestroyShaderModule(m_context->device(), m_vertex_shader_module, nullptr);
         m_context->device_table().vkDestroyShaderModule(m_context->device(), m_fragment_shader_module, nullptr);
     }
-} // namespace milg
+} // namespace milg::graphics

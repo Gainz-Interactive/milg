@@ -15,7 +15,7 @@
 const std::vector<const char *> requested_instance_layers = {"VK_LAYER_KHRONOS_validation"};
 const std::vector<const char *> requested_device_layers   = {"VK_LAYER_KHRONOS_validation"};
 
-namespace milg {
+namespace milg::graphics {
     std::shared_ptr<VulkanContext> VulkanContext::create(const std::unique_ptr<Window> &window) {
         MILG_INFO("Creating Vulkan context");
         VK_CHECK(volkInitialize());
@@ -406,4 +406,4 @@ namespace milg {
 
         m_device_table.vkFreeCommandBuffers(m_device, m_command_pool, 1, &command_buffer);
     }
-} // namespace milg
+} // namespace milg::graphics

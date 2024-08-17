@@ -1,14 +1,14 @@
 #include "imgui_layer.hpp"
+#include "graphics/swapchain.hpp"
 #include "imgui.h"
-#include "swapchain.hpp"
 #include "window.hpp"
 #include <memory>
 #include <milg.hpp>
 
 namespace milg {
-    std::shared_ptr<ImGuiLayer> ImGuiLayer::create(const std::shared_ptr<Swapchain>     &swapchain,
-                                                   const std::unique_ptr<Window>        &window,
-                                                   const std::shared_ptr<VulkanContext> &context) {
+    std::shared_ptr<ImGuiLayer> ImGuiLayer::create(const std::shared_ptr<graphics::Swapchain>     &swapchain,
+                                                   const std::unique_ptr<Window>                  &window,
+                                                   const std::shared_ptr<graphics::VulkanContext> &context) {
 
         MILG_INFO("Initializing ImGui context");
         ImGui::CreateContext();

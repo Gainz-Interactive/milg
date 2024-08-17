@@ -6,7 +6,7 @@
 #include <filesystem>
 #include <memory>
 
-namespace milg {
+namespace milg::graphics {
     struct TextureCreateInfo {
         VkFormat          format = VK_FORMAT_UNDEFINED;
         VkImageUsageFlags usage  = VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -68,4 +68,4 @@ namespace milg {
         Texture() = default;
     };
 
-} // namespace milg
+} // namespace milg::graphics
