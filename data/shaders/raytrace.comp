@@ -27,14 +27,14 @@ const float max_steps = 128.0;
 #define dot2(x) dot(x, x)
 
 float falloff(float dist) {
-    float attenuation = clamp(1.0 - ((dist * dist) * push_constants.inverse_resolution.y * 0.005 / push_constants.scale_modifier), 0.0, 1.0);
+    float attenuation = clamp(1.0 - ((dist * dist) * push_constants.inverse_resolution.y * 0.004 / push_constants.scale_modifier), 0.0, 1.0);
     // attenuation = 1.0f;
 
     return attenuation;
 }
 
 float epsilon() {
-    return 0.25 * push_constants.scale_modifier * max(push_constants.inverse_resolution.x, push_constants.inverse_resolution.y);
+    return 0.5 * push_constants.scale_modifier * max(push_constants.inverse_resolution.x, push_constants.inverse_resolution.y);
 }
 
 void main() {
@@ -50,7 +50,7 @@ void main() {
     vec3 final_color = vec3(0.0);
     float final_emmision = 0.0;
 
-    ivec2 tiled_noise_uv = ivec2(sample_pos);
+    ivec2 tiled_noise_uv = ivec2(vec2(uv.x * aspect, uv.y) * imageSize(in_noise));
     tiled_noise_uv.x = int(mod(tiled_noise_uv.x, imageSize(in_noise).x));
     tiled_noise_uv.y = int(mod(tiled_noise_uv.y, imageSize(in_noise).y));
 

@@ -46,7 +46,7 @@ public:
         float sample_num            = 80.0f;
         float distribution_bias     = 0.6f;
         float pixel_multiplier      = 1.5f;
-        float inverse_hue_tolerance = 30.0f;
+        float inverse_hue_tolerance = 5.0f;
     } rt_upscale_pass_constants;
 
     std::shared_ptr<Texture> albedo_buffer   = nullptr;

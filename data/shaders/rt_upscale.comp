@@ -15,7 +15,7 @@ layout(push_constant) uniform PushConstants {
     float inverse_hue_tolerance;
 } push_constants;
 
-#define pow(a,b) pow(max(a, 0.0), b)
+#define pow(a,b) pow(max(a, 0.01), b)
 mat2 sample_mat = mat2(cos(GOLDEN_ANGLE), sin(GOLDEN_ANGLE), -sin(GOLDEN_ANGLE), cos(GOLDEN_ANGLE));
 
 vec3 denoise_lightmap(in vec2 uv, in ivec2 image_size) {
