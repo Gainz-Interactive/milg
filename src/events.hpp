@@ -34,22 +34,22 @@ namespace milg {
 
     class KeyEvent : public Event {
     public:
-        inline int32_t key_code() const {
-            return m_key_code;
+        inline int32_t scan_code() const {
+            return m_scan_code;
         }
 
     protected:
-        KeyEvent(int32_t key_code) : m_key_code(key_code) {
+        KeyEvent(int32_t scan_code) : m_scan_code(scan_code) {
         }
 
-        int32_t m_key_code;
+        int32_t m_scan_code;
     };
 
     class KeyPressedEvent : public KeyEvent {
     public:
         DEFINE_EVENT_CLASS_TYPE(KeyPressed)
 
-        KeyPressedEvent(int32_t key_code, int32_t repeat_count) : KeyEvent(key_code), m_repeat_count(repeat_count) {
+        KeyPressedEvent(int32_t scan_code, int32_t repeat_count) : KeyEvent(scan_code), m_repeat_count(repeat_count) {
         }
 
         inline int32_t repeat_count() const {
@@ -64,7 +64,7 @@ namespace milg {
     public:
         DEFINE_EVENT_CLASS_TYPE(KeyReleased)
 
-        KeyReleasedEvent(int32_t key_code) : KeyEvent(key_code) {
+        KeyReleasedEvent(int32_t scan_code) : KeyEvent(scan_code) {
         }
     };
 
