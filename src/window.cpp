@@ -74,12 +74,12 @@ namespace milg {
                 return false;
             }
             case SDL_KEYDOWN: {
-                KeyPressedEvent key_pressed_event(event.key.keysym.sym, event.key.repeat);
+                KeyPressedEvent key_pressed_event(event.key.keysym.scancode, event.key.repeat);
                 m_event_callback(key_pressed_event);
                 break;
             }
             case SDL_KEYUP: {
-                KeyReleasedEvent key_released_event(event.key.keysym.sym);
+                KeyReleasedEvent key_released_event(event.key.keysym.scancode);
                 m_event_callback(key_released_event);
                 break;
             }
