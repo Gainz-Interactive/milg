@@ -7,6 +7,10 @@
 
 struct SDL_Window;
 
+namespace milg::graphics {
+    class VulkanContext;
+}
+
 namespace milg {
     struct WindowCreateInfo {
         std::string title     = "Untitled";
@@ -15,7 +19,7 @@ namespace milg {
         bool        resizable = false;
     };
 
-    struct Window {
+    class Window {
         using EventCallbackFn = std::function<void(class Event &event)>;
 
     public:
@@ -23,7 +27,7 @@ namespace milg {
         ~Window();
 
         void get_instance_extensions(std::vector<const char *> &extensions);
-        void get_swapchain_surface(const std::shared_ptr<class VulkanContext> &ctx, void *surface);
+        void get_swapchain_surface(const std::shared_ptr<graphics::VulkanContext> &ctx, void *surface);
 
         bool poll_events();
 

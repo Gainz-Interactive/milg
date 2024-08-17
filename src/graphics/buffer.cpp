@@ -1,6 +1,6 @@
 #include "buffer.hpp"
 
-namespace milg {
+namespace milg::graphics {
     std::shared_ptr<Buffer> Buffer::create(const std::shared_ptr<VulkanContext> &context,
                                            const BufferCreateInfo               &create_info) {
         const VkBufferCreateInfo buffer_create_info = {
@@ -66,4 +66,4 @@ namespace milg {
         vmaDestroyBuffer(m_context->allocator(), m_handle, m_allocation);
     }
 
-} // namespace milg
+} // namespace milg::graphics

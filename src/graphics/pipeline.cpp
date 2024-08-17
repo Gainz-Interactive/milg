@@ -6,7 +6,7 @@
 #include <milg.hpp>
 #include <string>
 
-namespace milg {
+namespace milg::graphics {
     std::shared_ptr<PipelineFactory> PipelineFactory::create(const std::shared_ptr<VulkanContext> &context) {
         bool supports_timestamps = true;
         if (context->device_limits().timestampPeriod == 0) {
@@ -343,4 +343,4 @@ namespace milg {
                                       uint32_t size, const void *data) {
         context->device_table().vkCmdPushConstants(command_buffer, layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, size, data);
     }
-} // namespace milg
+} // namespace milg::graphics

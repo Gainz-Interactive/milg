@@ -1,6 +1,6 @@
 #include "window.hpp"
 #include "events.hpp"
-#include "vk_context.hpp"
+#include "graphics/vk_context.hpp"
 
 #include <SDL_events.h>
 #include <SDL_video.h>
@@ -56,7 +56,7 @@ namespace milg {
         SDL_Vulkan_GetInstanceExtensions(m_handle, &count, &*(extensions.end() - count));
     }
 
-    void Window::get_swapchain_surface(const std::shared_ptr<VulkanContext> &context, void *surface) {
+    void Window::get_swapchain_surface(const std::shared_ptr<graphics::VulkanContext> &context, void *surface) {
         SDL_Vulkan_CreateSurface(m_handle, context->instance(), (VkSurfaceKHR *)surface);
     }
 

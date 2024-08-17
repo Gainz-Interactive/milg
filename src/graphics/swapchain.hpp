@@ -1,12 +1,13 @@
 #pragma once
 
 #include "vk_context.hpp"
+#include "window.hpp"
 
 #include <cstdint>
 #include <memory>
 #include <vector>
 
-namespace milg {
+namespace milg::graphics {
     struct SwapchainImage {
         VkImage       image  = VK_NULL_HANDLE;
         VkImageView   view   = VK_NULL_HANDLE;
@@ -15,7 +16,7 @@ namespace milg {
 
     class Swapchain {
     public:
-        static std::shared_ptr<Swapchain> create(const std::unique_ptr<struct Window> &window,
+        static std::shared_ptr<Swapchain> create(const std::unique_ptr<Window>        &window,
                                                  const std::shared_ptr<VulkanContext> &context);
 
         ~Swapchain();
@@ -51,4 +52,4 @@ namespace milg {
 
         Swapchain() = default;
     };
-} // namespace milg
+} // namespace milg::graphics

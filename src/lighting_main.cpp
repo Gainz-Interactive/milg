@@ -11,14 +11,15 @@
 
 #include "application.hpp"
 #include "events.hpp"
-#include "pipeline.hpp"
-#include "sprite_batch.hpp"
-#include "swapchain.hpp"
-#include "texture.hpp"
-#include "vk_context.hpp"
+#include "graphics/pipeline.hpp"
+#include "graphics/sprite_batch.hpp"
+#include "graphics/swapchain.hpp"
+#include "graphics/texture.hpp"
+#include "graphics/vk_context.hpp"
 #include "window.hpp"
 
 using namespace milg;
+using namespace milg::graphics;
 
 constexpr uint32_t WORKGROUP_SIZE = 32;
 uint32_t           dispatch_size(uint32_t work_size) {

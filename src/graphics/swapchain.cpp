@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <milg.hpp>
 
-namespace milg {
+namespace milg::graphics {
     std::shared_ptr<Swapchain> Swapchain::create(const std::unique_ptr<Window>        &window,
                                                  const std::shared_ptr<VulkanContext> &context) {
         MILG_INFO("Creating swapchain");
@@ -251,4 +251,4 @@ namespace milg {
     uint32_t Swapchain::image_count() const {
         return static_cast<uint32_t>(m_images.size());
     }
-} // namespace milg
+} // namespace milg::graphics

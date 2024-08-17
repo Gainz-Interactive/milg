@@ -4,7 +4,7 @@
 
 #include <memory>
 
-namespace milg {
+namespace milg::graphics {
     struct BufferCreateInfo {
         VkDeviceSize             size             = 0;
         VmaMemoryUsage           memory_usage     = VMA_MEMORY_USAGE_UNKNOWN;
@@ -36,4 +36,4 @@ namespace milg {
 
         Buffer() = default;
     };
-} // namespace milg
+} // namespace milg::graphics

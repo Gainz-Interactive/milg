@@ -13,7 +13,7 @@
 #include "texture.hpp"
 #include "vk_context.hpp"
 
-namespace milg {
+namespace milg::graphics {
     struct PipelineOutputDescription {
         VkFormat format = VK_FORMAT_UNDEFINED;
         uint32_t width  = 0;
@@ -75,4 +75,4 @@ namespace milg {
 
         PipelineFactory() = default;
     };
-} // namespace milg
+} // namespace milg::graphics

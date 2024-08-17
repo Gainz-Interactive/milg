@@ -1,9 +1,9 @@
 #include "application.hpp"
 #include "audio/audio.hpp"
 #include "events.hpp"
+#include "graphics/swapchain.hpp"
+#include "graphics/vk_context.hpp"
 #include "imgui.h"
-#include "swapchain.hpp"
-#include "vk_context.hpp"
 
 #include <chrono>
 #include <cstdint>
@@ -18,8 +18,8 @@ namespace milg {
         Application::s_instance = this;
 
         m_window      = Window::create(window_create_info);
-        m_context     = VulkanContext::create(m_window);
-        m_swapchain   = Swapchain::create(m_window, m_context);
+        m_context     = graphics::VulkanContext::create(m_window);
+        m_swapchain   = graphics::Swapchain::create(m_window, m_context);
         m_imgui_layer = ImGuiLayer::create(m_swapchain, m_window, m_context);
         init_frame_resources();
 
@@ -244,11 +244,11 @@ namespace milg {
         return m_window;
     }
 
-    const std::shared_ptr<VulkanContext> &Application::context() const {
+    const std::shared_ptr<graphics::VulkanContext> &Application::context() const {
         return m_context;
     }
 
-    const std::shared_ptr<Swapchain> &Application::swapchain() const {
+    const std::shared_ptr<graphics::Swapchain> &Application::swapchain() const {
         return m_swapchain;
     }
 
