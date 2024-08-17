@@ -4,6 +4,7 @@
 #include "graphics/swapchain.hpp"
 #include "graphics/vk_context.hpp"
 #include "imgui.h"
+#include "milg/logging.hpp"
 
 #include <chrono>
 #include <cstdint>
@@ -273,6 +274,46 @@ namespace milg {
             return false;
         });
 
+        dispatcher.dispatch<KeyPressedEvent>([this](KeyPressedEvent &e) {
+            if (e.scan_code() >= static_cast<int32_t>(m_keystates.size())) {
+                MILG_WARN("Key scan code out of range: {}", e.scan_code());
+                return false;
+            }
+
+            m_keystates[e.scan_code()] = true;
+            return false;
+        });
+
+        dispatcher.dispatch<KeyReleasedEvent>([this](KeyReleasedEvent &e) {
+            if (e.scan_code() >= static_cast<int32_t>(m_keystates.size())) {
+                MILG_WARN("Key scan code out of range: {}", e.scan_code());
+                return false;
+            }
+
+            m_keystates[e.scan_code()] = false;
+            return false;
+        });
+
+        dispatcher.dispatch<MousePressedEvent>([this](MousePressedEvent &e) {
+            if (e.button() >= static_cast<int32_t>(m_mouse_button_states.size())) {
+                MILG_WARN("Mouse button out of range: {}", e.button());
+                return false;
+            }
+
+            m_mouse_button_states[e.button()] = true;
+            return false;
+        });
+
+        dispatcher.dispatch<MouseReleasedEvent>([this](MouseReleasedEvent &e) {
+            if (e.button() >= static_cast<int32_t>(m_mouse_button_states.size())) {
+                MILG_WARN("Mouse button out of range: {}", e.button());
+                return false;
+            }
+
+            m_mouse_button_states[e.button()] = false;
+            return false;
+        });
+
         for (auto it = m_layers.rbegin(); it != m_layers.rend(); ++it) {
             if (event.handled) {
                 break;
@@ -280,6 +321,22 @@ namespace milg {
 
             (*it)->on_event(event);
         }
+    }
+
+    bool Application::is_key_down(int32_t scan_code) const {
+        if (scan_code >= static_cast<int32_t>(m_keystates.size())) {
+            return false;
+        }
+
+        return m_keystates[scan_code];
+    }
+
+    bool Application::is_mouse_button_down(int32_t button) const {
+        if (button >= static_cast<int32_t>(m_mouse_button_states.size())) {
+            return false;
+        }
+
+        return m_mouse_button_states[button];
     }
 
     VkCommandBuffer Application::aquire_command_buffer() {
