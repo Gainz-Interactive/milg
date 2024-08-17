@@ -120,7 +120,7 @@ public:
             this->light_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
         }
 
-        this->sprite_batch = SpriteBatch::create(context, albedo_buffer->format(), emissive_buffer->format(), 10000);
+        this->sprite_batch = SpriteBatch::create(context, albedo_buffer->format(), 10000);
 
         this->pipeline_factory      = PipelineFactory::create(context);
         this->voronoi_seed_pipeline = this->pipeline_factory->create_compute_pipeline(
@@ -202,12 +202,12 @@ public:
         occluder.color    = {3.0f, 3.0f, 3.0f, 1.0f};
         occluder.size     = {10, 100};
         occluder.rotation = time * 5;
-        sprite_batch->draw_sprite(occluder, light_texture, light_texture);
+        sprite_batch->draw_sprite(occluder, light_texture);
 
         occluder.rotation = (time + 180) * 5;
-        sprite_batch->draw_sprite(occluder, light_texture, light_texture);
+        sprite_batch->draw_sprite(occluder, light_texture);
 
-        sprite_batch->draw_sprite(s, albedo_texture, emissive_texture);
+        sprite_batch->draw_sprite(s, albedo_texture);
         sprite_batch->build_batches(command_buffer);
 
         const VkExtent2D extent   = {albedo_buffer->width(), albedo_buffer->height()};

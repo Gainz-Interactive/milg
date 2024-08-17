@@ -25,8 +25,7 @@ namespace milg::graphics {
     }
 
     std::shared_ptr<SpriteBatch> SpriteBatch::create(const std::shared_ptr<VulkanContext> &context,
-                                                     VkFormat albdedo_render_format, VkFormat emissive_render_format,
-                                                     uint32_t capacity) {
+                                                     VkFormat albdedo_render_format, uint32_t capacity) {
         MILG_INFO("Creating sprite batch with capacity: {}", capacity);
 
         auto vertex_shader_data = asset_store::get_asset("sprite_batch.vert.spv");
@@ -226,7 +225,7 @@ namespace milg::graphics {
             .inputRate = VK_VERTEX_INPUT_RATE_INSTANCE,
         };
 
-        const std::array<VkVertexInputAttributeDescription, 5> vertex_attribs = {
+        const std::array<VkVertexInputAttributeDescription, 4> vertex_attribs = {
             // x, y, width, height
             VkVertexInputAttributeDescription{
                 .location = 0,
@@ -248,18 +247,12 @@ namespace milg::graphics {
                 .format   = VK_FORMAT_R32G32B32A32_SFLOAT,
                 .offset   = 8 * sizeof(float),
             },
-            // rotation, emission strength
+            // rotation, texture_index
             VkVertexInputAttributeDescription{
                 .location = 3,
                 .binding  = 0,
                 .format   = VK_FORMAT_R32G32_SFLOAT,
                 .offset   = 12 * sizeof(float),
-            },
-            VkVertexInputAttributeDescription{
-                .location = 4,
-                .binding  = 0,
-                .format   = VK_FORMAT_R32G32_SFLOAT,
-                .offset   = 14 * sizeof(float),
             },
         };
 
@@ -321,8 +314,9 @@ namespace milg::graphics {
                               VK_COLOR_COMPONENT_A_BIT,
         };
 
-        std::array<VkPipelineColorBlendAttachmentState, 2> color_blend_attachments = {color_blend_attachment,
-                                                                                      color_blend_attachment};
+        std::array<VkPipelineColorBlendAttachmentState, 1> color_blend_attachments = {
+            color_blend_attachment,
+        };
 
         const VkPipelineColorBlendStateCreateInfo color_blend_info = {
             .sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
@@ -358,7 +352,7 @@ namespace milg::graphics {
             .pScissors     = nullptr,
         };
 
-        const std::array<VkFormat, 2> render_formats = {albdedo_render_format, emissive_render_format};
+        const std::array<VkFormat, 1> render_formats = {albdedo_render_format};
 
         const VkPipelineRenderingCreateInfo dynamic_rendering_info = {
             .sType                   = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR,
@@ -415,8 +409,7 @@ namespace milg::graphics {
         return batch;
     }
 
-    void SpriteBatch::draw_sprite(Sprite &sprite, const std::shared_ptr<Texture> &texture,
-                                  const std::shared_ptr<Texture> &emissive_texture) {
+    void SpriteBatch::draw_sprite(Sprite &sprite, const std::shared_ptr<Texture> &texture) {
         if (m_sprite_count >= m_capacity) {
             MILG_ERROR("SpriteBatch::draw_sprite: Exceeded capacity");
             return;
@@ -429,8 +422,7 @@ namespace milg::graphics {
 
         auto &batch = m_batches.back();
 
-        sprite.texture_index          = register_texture(texture);
-        sprite.emissive_texture_index = register_texture(emissive_texture);
+        sprite.texture_index = register_texture(texture);
 
         float *geometry_data = this->m_backing_buffer
                                    ? reinterpret_cast<float *>(this->m_backing_buffer->allocation_info().pMappedData)
