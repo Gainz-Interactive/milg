@@ -32,13 +32,28 @@ namespace milg::asset_store {
         return ret;
     }
 
-    void load_assets(const std::string &path) {
+    void load_asset(const std::string &name, const std::filesystem::path &path, Asset::Type type,
+                    Asset::Preprocessor preprocessor) {
+        for (const auto &search_path : search_paths) {
+            try {
+                assets.insert({name, Asset::Loader::load(type, search_path / path, preprocessor)});
+
+                return;
+            } catch (const milg::file_not_found_error &) {
+                continue;
+            }
+        }
+
+        throw file_not_found_error(path);
+    }
+
+    void load_assets(const std::filesystem::path &path) {
         auto stream = std::ifstream(path);
         auto json   = nlohmann::json::parse(stream);
 
         for (const auto &[name, definition] : json.items()) {
-            auto loaded = false;
-            auto type   = definition["type"].template get<Asset::Type>();
+            auto type         = definition["type"].template get<Asset::Type>();
+            auto preprocessor = definition["preprocess"].template get<Asset::Preprocessor>();
 
             if (!definition.contains("path")) {
                 MILG_ERROR("Asset {} definition does not contain a path", name);
@@ -48,23 +63,9 @@ namespace milg::asset_store {
 
             MILG_DEBUG("Loading {}…", name);
 
-            for (const auto &search_path : search_paths) {
-                try {
-                    auto path         = search_path / definition["path"];
-                    auto preprocessor = definition["preprocess"].template get<Asset::Preprocessor>();
-                    auto asset        = Asset::Loader::load(type, path, preprocessor);
-
-                    assets.insert({name, asset});
-
-                    loaded = true;
-
-                    break;
-                } catch (const milg::file_not_found_error &) {
-                    continue;
-                }
-            }
-
-            if (!loaded) {
+            try {
+                load_asset(name, definition["path"], type, preprocessor);
+            } catch (const milg::file_not_found_error &) {
                 MILG_ERROR("Loading {} failed: file not found in any of the search paths", name);
             }
         }
