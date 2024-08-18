@@ -21,6 +21,7 @@ set(
     "layer.cpp"
     "logging.cpp"
     "main.cpp"
+    "map.cpp"
     "window.cpp"
     "${GRAPHICS_SOURCE_FILES}"
     "${imgui_SOURCE_DIR}/imgui.cpp"

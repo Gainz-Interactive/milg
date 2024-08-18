@@ -6,3 +6,5 @@
 #include "milg/event.hpp"
 #include "milg/layer.hpp"
 #include "milg/logging.hpp"
+#include "milg/map.hpp"
+#include "milg/sprite.hpp"
