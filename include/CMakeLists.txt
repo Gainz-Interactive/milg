@@ -8,6 +8,7 @@ add_library(
     "milg/event.hpp"
     "milg/layer.hpp"
     "milg/logging.hpp"
+    "milg/map.hpp"
 )
 target_include_directories(
     libmilg
@@ -16,4 +17,5 @@ target_include_directories(
 target_link_libraries(
     libmilg
     INTERFACE nlohmann_json::nlohmann_json
+    INTERFACE glm::glm-header-only
 )
