@@ -39,9 +39,6 @@ namespace milg::asset_store {
         for (const auto &[name, definition] : json.items()) {
             auto loaded = false;
             auto type   = definition["type"].template get<Asset::Type>();
-            if (type == Asset::Type::INVALID) {
-                type = Asset::Type::DATA;
-            }
 
             if (!definition.contains("path")) {
                 MILG_ERROR("Asset {} definition does not contain a path", name);
@@ -53,8 +50,9 @@ namespace milg::asset_store {
 
             for (const auto &search_path : search_paths) {
                 try {
-                    auto path  = search_path / definition["path"];
-                    auto asset = Asset::Loader::load(type, path);
+                    auto path         = search_path / definition["path"];
+                    auto preprocessor = definition["preprocess"].template get<Asset::Preprocessor>();
+                    auto asset        = Asset::Loader::load(type, path, preprocessor);
 
                     assets.insert({name, asset});
 
