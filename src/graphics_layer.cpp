@@ -82,10 +82,12 @@ public:
         sprite_batch->reset();
         sprite_batch->begin_batch(mat);
 
-        Sprite sprite;
-        sprite.position = {framebuffer->width() / 2, framebuffer->height() / 2};
-        sprite.size     = {100.0f, 100.0f};
-        sprite.color    = {1.0f, 0.0f, 0.0f, 1.0f};
+        Sprite sprite = {
+            .position = {framebuffer->width() / 2, framebuffer->height() / 2},
+            .size     = {100.0f, 100.0f},
+            .color    = {1.0f, 0.0f, 0.0f, 1.0f},
+        };
+
         sprite_batch->draw_sprite(sprite, test_texture);
 
         // After drawing, build_batches should be called, this copies over data to the appropriate buffers
