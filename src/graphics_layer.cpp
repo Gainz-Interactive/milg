@@ -17,14 +17,13 @@ using namespace milg::graphics;
 class GraphicsLayer : public Layer {
 public:
     std::shared_ptr<VulkanContext> context = nullptr;
-
     // This will hold whatever we render in the layer
     std::shared_ptr<Texture> framebuffer = nullptr;
-
     // Some random texture to draw
-    std::shared_ptr<Texture> test_texture = nullptr;
-
+    std::shared_ptr<Texture>     test_texture = nullptr;
     std::shared_ptr<SpriteBatch> sprite_batch = nullptr;
+    std::unique_ptr<Map>         map;
+    std::vector<Tile>            tiles;
 
     void on_attach() override {
         MILG_INFO("Initializing Graphics layer");
@@ -38,8 +37,16 @@ public:
             .min_filter = VK_FILTER_NEAREST,
             .mag_filter = VK_FILTER_NEAREST,
         };
+
+        auto map_data = asset_store::get_asset("map_desert");
+        this->map     = std::make_unique<Map>(map_data->get_preprocessed<nlohmann::json>());
+        auto layer    = this->map->get_layer(1);
+        this->tiles   = layer->get_tiles();
+
+        auto tileset = this->map->get_tileset_for_gid(1);
+
         {
-            auto data          = asset_store::get_asset("light");
+            auto data          = asset_store::get_asset(tileset->get_source().string());
             this->test_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
         }
 
@@ -82,13 +89,9 @@ public:
         sprite_batch->reset();
         sprite_batch->begin_batch(mat);
 
-        Sprite sprite = {
-            .position = {framebuffer->width() / 2, framebuffer->height() / 2},
-            .size     = {100.0f, 100.0f},
-            .color    = {1.0f, 0.0f, 0.0f, 1.0f},
-        };
-
-        sprite_batch->draw_sprite(sprite, test_texture);
+        for (auto &tile : this->tiles) {
+            sprite_batch->draw_sprite(tile.sprite, test_texture);
+        }
 
         // After drawing, build_batches should be called, this copies over data to the appropriate buffers
         sprite_batch->build_batches(command_buffer);

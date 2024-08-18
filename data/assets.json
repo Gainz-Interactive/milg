@@ -49,5 +49,19 @@
     },
     "rt_upscale.comp.spv": {
         "path": "shaders/rt_upscale.comp.spv"
+    },
+    "map_desert": {
+        "path": "maps/desert.tmj",
+        "type": "map",
+        "preprocess": "json"
+    },
+    "desert.tsj": {
+        "path": "maps/desert.tsj",
+        "type": "tileset",
+        "preprocess": "json"
+    },
+    "tmw_desert_spacing.png": {
+        "path": "maps/tmw_desert_spacing.png",
+        "type": "image"
     }
 }
