@@ -1,0 +1,67 @@
+{
+    "c1a0_sci_dis1d.wav": {
+        "path": "sound/c1a0_sci_dis1d.wav",
+        "type": "sound"
+    },
+    "c1a0_sci_dis10a.wav": {
+        "path": "sound/c1a0_sci_dis10a.wav",
+        "type": "sound"
+    },
+    "map": {
+        "path": "textures/map.png",
+        "type": "image"
+    },
+    "noise": {
+        "path": "textures/noise.png",
+        "type": "image"
+    },
+    "map_emissive": {
+        "path": "textures/map_emissive.png",
+        "type": "image"
+    },
+    "light": {
+        "path": "textures/light.png",
+        "type": "image"
+    },
+    "sprite_batch.frag.spv": {
+        "path": "shaders/sprite_batch.frag.spv"
+    },
+    "sprite_batch.vert.spv": {
+        "path": "shaders/sprite_batch.vert.spv"
+    },
+    "composite.comp.spv": {
+        "path": "shaders/composite.comp.spv"
+    },
+    "distance_field.comp.spv": {
+        "path": "shaders/distance_field.comp.spv"
+    },
+    "noise_seed.comp.spv": {
+        "path": "shaders/noise_seed.comp.spv"
+    },
+    "raytrace.comp.spv": {
+        "path": "shaders/raytrace.comp.spv"
+    },
+    "voronoi.comp.spv": {
+        "path": "shaders/voronoi.comp.spv"
+    },
+    "voronoi_seed.comp.spv": {
+        "path": "shaders/voronoi_seed.comp.spv"
+    },
+    "rt_upscale.comp.spv": {
+        "path": "shaders/rt_upscale.comp.spv"
+    },
+    "map_desert": {
+        "path": "maps/desert.tmj",
+        "type": "map",
+        "preprocess": "json"
+    },
+    "desert.tsj": {
+        "path": "maps/desert.tsj",
+        "type": "tileset",
+        "preprocess": "json"
+    },
+    "tmw_desert_spacing.png": {
+        "path": "maps/tmw_desert_spacing.png",
+        "type": "image"
+    }
+}

@@ -117,6 +117,5 @@ find_package(Vulkan REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(VulkanUtilityLibraries CONFIG REQUIRED)
 
-add_subdirectory(data)
-add_subdirectory(include)
-add_subdirectory(src)
+add_subdirectory(engine)
+add_subdirectory(projects)
