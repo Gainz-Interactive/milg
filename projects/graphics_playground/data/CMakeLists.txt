@@ -23,4 +23,4 @@ foreach(SHADER IN LISTS SHADER_SOURCES)
     list(APPEND SHADERS "${CMAKE_CURRENT_BINARY_DIR}/shaders/${FILENAME}.spv")
 endforeach()
 
-add_custom_target(shaders ALL DEPENDS ${SHADERS})
+add_custom_target(graphics_playground_shaders ALL DEPENDS ${SHADERS})
