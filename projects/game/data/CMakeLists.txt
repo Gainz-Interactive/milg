@@ -1,13 +1,6 @@
 set(SHADER_SOURCES
     "shaders/sprite_batch.frag"
     "shaders/sprite_batch.vert"
-    "shaders/voronoi_seed.comp"
-    "shaders/voronoi.comp"
-    "shaders/distance_field.comp"
-    "shaders/raytrace.comp"
-    "shaders/composite.comp"
-    "shaders/noise_seed.comp"
-    "shaders/rt_upscale.comp"
 )
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/shaders")
@@ -23,4 +16,4 @@ foreach(SHADER IN LISTS SHADER_SOURCES)
     list(APPEND SHADERS "${CMAKE_CURRENT_BINARY_DIR}/shaders/${FILENAME}.spv")
 endforeach()
 
-add_custom_target(game_shaders DEPENDS ${SHADERS})
+add_custom_target(game_shaders ALL DEPENDS ${SHADERS})
