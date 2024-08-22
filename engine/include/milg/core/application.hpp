@@ -5,6 +5,7 @@
 #include <milg/graphics/swapchain.hpp>
 #include <milg/graphics/vk_context.hpp>
 
+#include <array>
 #include <cstdint>
 #include <memory>
 #include <vector>

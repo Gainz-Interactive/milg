@@ -8,7 +8,6 @@
 #include <milg/graphics/swapchain.hpp>
 #include <milg/graphics/vk_context.hpp>
 
-#include <array>
 #include <chrono>
 #include <cstdint>
 #include <filesystem>
