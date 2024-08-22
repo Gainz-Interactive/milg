@@ -81,8 +81,6 @@ public:
 };
 
 int main(int argc, char **argv) {
-    milg::Logging::init();
-
     milg::WindowCreateInfo window_info = {
         .title  = "Milg",
         .width  = 1600,
