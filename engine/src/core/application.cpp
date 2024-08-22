@@ -21,6 +21,8 @@ namespace milg {
     Application::Application(int argc, char **argv, const WindowCreateInfo &window_create_info) {
         Application::s_instance = this;
 
+        Logging::init();
+
         m_window      = Window::create(window_create_info);
         m_context     = graphics::VulkanContext::create(m_window);
         m_swapchain   = graphics::Swapchain::create(m_window, m_context);

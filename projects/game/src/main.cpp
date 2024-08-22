@@ -173,8 +173,6 @@ public:
 };
 
 int main(int argc, char **argv) {
-    Logging::init();
-
     WindowCreateInfo window_info = {
         .title  = "Milg",
         .width  = 1600,
