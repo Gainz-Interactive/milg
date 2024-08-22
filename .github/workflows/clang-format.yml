@@ -19,4 +19,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          clang-format -Werror --dry-run -- src/**/*.cpp src/**/*.hpp
+          find "engine" "projects" -type f \( -name "*.cpp" -o -name "*.hpp" \) | xargs clang-format -Werror --dry-run
