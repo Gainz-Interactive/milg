@@ -163,7 +163,7 @@ public:
     void on_update(float delta) override {
         time += delta;
 
-        auto command_buffer = Application::get().aquire_command_buffer();
+        auto command_buffer = Application::get().acquire_command_buffer();
 
         const VkCommandBufferBeginInfo command_buffer_begin_info = {
             .sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,

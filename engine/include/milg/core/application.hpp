@@ -30,7 +30,7 @@ namespace milg {
         bool is_key_down(int32_t scan_code) const;
         bool is_mouse_button_down(int32_t button) const;
 
-        VkCommandBuffer aquire_command_buffer();
+        VkCommandBuffer acquire_command_buffer();
 
         uint32_t frames_per_second() const;
 

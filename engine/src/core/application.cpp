@@ -337,7 +337,7 @@ namespace milg {
         return m_mouse_button_states[button];
     }
 
-    VkCommandBuffer Application::aquire_command_buffer() {
+    VkCommandBuffer Application::acquire_command_buffer() {
         VkCommandBuffer             command_buffer               = VK_NULL_HANDLE;
         VkCommandBufferAllocateInfo command_buffer_allocate_info = {
             .sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
