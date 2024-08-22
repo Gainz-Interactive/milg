@@ -165,6 +165,12 @@ public:
 class Milgame : public Application {
 public:
     Milgame(int argc, char **argv, const WindowCreateInfo &window_info) : Application(argc, argv, window_info) {
+        auto bindir = std::filesystem::path(argv[0]).parent_path();
+
+        asset_store::add_search_path((bindir / "data").lexically_normal());
+        asset_store::add_search_path(ASSET_DIR);
+        asset_store::load_assets(ASSET_DIR "/assets.json");
+
         push_layer(new GraphicsLayer());
     }
 
