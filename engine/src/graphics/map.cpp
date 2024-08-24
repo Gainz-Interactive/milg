@@ -7,22 +7,28 @@
 
 namespace milg {
     Tileset::Tileset(const nlohmann::json &json) {
+        json["name"].get_to(this->name);
+        json["tilecount"].get_to(this->tile_count);
         json["imagewidth"].get_to(this->width);
         json["imageheight"].get_to(this->height);
-
         json["tilewidth"].get_to(this->tile_width);
         json["tileheight"].get_to(this->tile_height);
-
         json["columns"].get_to(this->columns);
-
         json["spacing"].get_to(this->spacing);
         json["margin"].get_to(this->margin);
-
         json["image"].get_to(this->source);
+    }
+
+    const std::string &Tileset::get_name() {
+        return this->name;
     }
 
     const std::filesystem::path &Tileset::get_source() {
         return this->source;
+    }
+
+    std::size_t Tileset::get_tile_count() {
+        return this->tile_count;
     }
 
     std::size_t Tileset::get_width() {
@@ -58,55 +64,6 @@ namespace milg {
         };
     }
 
-    Map::Layer::Layer(Map *map, const nlohmann::json &json) {
-        json["type"].get_to(this->type);
-
-        json["data"].get_to(this->gids);
-
-        json["x"].get_to(this->x);
-        json["y"].get_to(this->y);
-        json["width"].get_to(this->width);
-        json["height"].get_to(this->height);
-
-        this->map    = map;
-    }
-
-    std::vector<Tile> Map::Layer::get_tiles() {
-        std::vector<Tile> ret;
-        auto              map_width       = this->map->get_width();
-        auto              map_tile_width  = this->map->get_tile_width();
-        auto              map_tile_height = this->map->get_tile_height();
-
-        for (Gid i = 0; i < this->height; i++) {
-            for (Gid j = 0; j < this->width; j++) {
-                auto gid     = this->gids[map_width * i + j];
-                auto tileset = this->map->get_tileset_for_gid(gid);
-
-                auto sprite = milg::graphics::Sprite{
-                    .position = {j * map_tile_width, i * map_tile_height},
-                    .size     = {map_tile_width, map_tile_height},
-                    .uvs      = tileset->get_uv(gid),
-                };
-
-                ret.emplace_back(gid, sprite);
-            }
-        }
-
-        return ret;
-    }
-
-    std::size_t Map::Layer::get_width() {
-        return this->width;
-    }
-
-    std::size_t Map::Layer::get_height() {
-        return this->height;
-    }
-
-    Map::Layer::Type Map::Layer::get_type() {
-        return this->type;
-    }
-
     Map::Map(const nlohmann::json &json) {
         json["width"].get_to(this->width);
         json["height"].get_to(this->height);
@@ -114,18 +71,32 @@ namespace milg {
         json["tilewidth"].get_to(this->tile_width);
         json["tileheight"].get_to(this->tile_height);
 
-        for (auto &tileset_json : json["tilesets"].items()) {
-            auto &tileset   = tileset_json.value();
-            auto  first_gid = tileset["firstgid"].get<std::size_t>();
-            auto  source    = tileset["source"].get<std::string>();
-            auto  asset     = asset_store::get_asset(source);
+        std::map<Gid, std::weak_ptr<Tileset>> tileset_gid_map;
 
-            tilesets.try_emplace(first_gid, std::make_unique<Tileset>(asset->get_preprocessed<nlohmann::json>()));
+        for (auto &tileset_json : json["tilesets"]) {
+            auto first_gid = tileset_json.at("firstgid").get<Gid>();
+            auto source    = tileset_json.at("source").get<std::string>();
+            auto asset     = asset_store::get_asset(source);
+            auto tileset   = std::make_shared<Tileset>(asset->get_preprocessed<nlohmann::json>());
+
+            tilesets.push_back(tileset);
+
+            for (auto i = first_gid; i <= first_gid + tileset->get_tile_count(); i++) {
+                tileset_gid_map[i] = tileset;
+            }
         }
-        for (auto &layer : json["layers"]) {
-            auto id = layer["id"].get<std::size_t>();
 
-            layers[id] = std::make_unique<Layer>(this, layer);
+        for (auto &layer : json["layers"]) {
+            auto type = layer["type"].get<LayerType>();
+
+            switch (type) {
+            case LayerType::TILE:
+                this->process_tile_layer(tileset_gid_map, layer);
+                break;
+            case LayerType::OBJECT:
+                this->process_object_layer(layer);
+                break;
+            }
         }
     }
 
@@ -145,29 +116,85 @@ namespace milg {
         return this->tile_height;
     }
 
-    Map::Layer *Map::get_layer(std::size_t id) {
-        if (auto iter = this->layers.find(id); iter != this->layers.end()) {
-            return iter->second.get();
+    std::vector<Tile> *Map::get_layer(const std::string &name) {
+        if (auto iter = this->layers.find(name); iter != this->layers.end()) {
+            return &iter->second;
         }
 
         return nullptr;
     }
 
-    Tileset *Map::get_tileset_for_gid(std::size_t gid) {
-        Tileset *last_tileset = nullptr;
+    std::shared_ptr<Map::Object> Map::get_object(const char *name, const char *type) {
+        return nullptr;
+    }
 
-        for (auto &[k, v] : tilesets) {
-            if (k == gid) {
-                return v.get();
+    std::vector<std::shared_ptr<Tileset>> Map::get_tilesets() {
+        return this->tilesets;
+    }
+
+    void Map::process_tile_layer(std::map<Gid, std::weak_ptr<Tileset>> tilesets, const nlohmann::json &json) {
+        std::vector<Tile> tiles;
+        auto              gids         = json["data"].get<std::vector<Gid>>();
+        auto              x_offset     = json["x"].get<std::size_t>();
+        auto              y_offset     = json["y"].get<std::size_t>();
+        auto              layer_width  = json["width"].get<Gid>();
+        auto              layer_height = json["height"].get<Gid>();
+
+        for (Gid i = 0; i < layer_height; i++) {
+            for (Gid j = 0; j < layer_width; j++) {
+                auto gid     = gids[i * layer_height + j];
+                auto tileset = tilesets[gid].lock();
+                auto sprite  = milg::graphics::Sprite{
+                     .position =
+                         {
+                            (x_offset * this->tile_width) + (j * this->tile_width),
+                            (y_offset * this->tile_height) + (i * this->tile_height),
+                        },
+                     .size = {this->tile_width, this->tile_height},
+                     .uvs  = tileset->get_uv(gid),
+                };
+
+                tiles.emplace_back(gid, sprite, tileset);
             }
-
-            if (k > gid) {
-                return last_tileset;
-            }
-
-            last_tileset = v.get();
         }
 
-        return last_tileset;
+        auto name = json["name"].get<std::string>();
+
+        this->layers[name] = tiles;
+    }
+
+    void Map::process_object_layer(const nlohmann::json &json) {
+        for (auto &object_json : json["objects"]) {
+            auto name   = object_json["name"].get<std::string>();
+            auto type   = object_json["type"].get<std::string>();
+            auto object = std::shared_ptr<Object>(new Object{
+                .id   = object_json["id"].get<Id>(),
+                .name = name,
+                .type = type,
+                .pos =
+                    {
+                        object_json["x"].get<float>(),
+                        object_json["y"].get<float>(),
+                    },
+                .size =
+                    {
+                        object_json["width"].get<float>(),
+                        object_json["height"].get<float>(),
+                    },
+            });
+
+            if (auto properties = object_json.find("properties"); properties != object_json.end()) {
+                for (auto &property : *properties) {
+                    auto name = property.at("name").get<std::string>();
+
+                    object->properties[name] = property.at("value");
+                }
+            }
+
+            this->objects.push_back(object);
+
+            this->object_name_map.insert({name, std::weak_ptr<Object>(object)});
+            this->object_type_map.insert({type, std::weak_ptr<Object>(object)});
+        }
     }
 } // namespace milg

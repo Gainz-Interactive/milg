@@ -52,9 +52,54 @@
          "width":40,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":4,
+         "name":"Objects",
+         "objects":[
+                {
+                 "height":0,
+                 "id":37,
+                 "name":"spawn",
+                 "point":true,
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":465,
+                 "y":261
+                }, 
+                {
+                 "height":390.913043478261,
+                 "id":38,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"s_looping",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"s_source",
+                         "type":"string",
+                         "value":"132051546.mp3"
+                        }],
+                 "rotation":0,
+                 "type":"s_emitter",
+                 "visible":true,
+                 "width":37,
+                 "x":859,
+                 "y":160
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":4,
- "nextobjectid":37,
+ "nextlayerid":5,
+ "nextobjectid":39,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.11.0",
