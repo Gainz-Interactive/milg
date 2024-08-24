@@ -7,19 +7,18 @@
 
 namespace milg {
     Tileset::Tileset(const nlohmann::json &json) {
-        const auto width       = json["imagewidth"].template get<std::size_t>();
-        const auto height      = json["imageheight"].template get<std::size_t>();
-        const auto tile_width  = json["tilewidth"].template get<std::size_t>();
-        const auto tile_height = json["tileheight"].template get<std::size_t>();
+        json["imagewidth"].get_to(this->width);
+        json["imageheight"].get_to(this->height);
 
-        this->source      = std::filesystem::path(json["image"].template get<std::string>());
-        this->width       = width;
-        this->height      = height;
-        this->tile_width  = tile_width;
-        this->tile_height = tile_height;
-        this->columns     = json["columns"].template get<std::size_t>();
-        this->spacing     = json["spacing"].template get<std::size_t>();
-        this->margin      = json["margin"].template get<std::size_t>();
+        json["tilewidth"].get_to(this->tile_width);
+        json["tileheight"].get_to(this->tile_height);
+
+        json["columns"].get_to(this->columns);
+
+        json["spacing"].get_to(this->spacing);
+        json["margin"].get_to(this->margin);
+
+        json["image"].get_to(this->source);
     }
 
     const std::filesystem::path &Tileset::get_source() {
@@ -60,11 +59,15 @@ namespace milg {
     }
 
     Map::Layer::Layer(Map *map, const nlohmann::json &json) {
-        this->gids   = json["data"].template get<std::vector<std::size_t>>();
-        this->x      = json["x"].template get<std::size_t>();
-        this->y      = json["y"].template get<std::size_t>();
-        this->width  = json["width"].template get<std::size_t>();
-        this->height = json["height"].template get<std::size_t>();
+        json["type"].get_to(this->type);
+
+        json["data"].get_to(this->gids);
+
+        json["x"].get_to(this->x);
+        json["y"].get_to(this->y);
+        json["width"].get_to(this->width);
+        json["height"].get_to(this->height);
+
         this->map    = map;
     }
 
@@ -105,22 +108,22 @@ namespace milg {
     }
 
     Map::Map(const nlohmann::json &json) {
-        this->width  = json["width"].template get<std::size_t>();
-        this->height = json["height"].template get<std::size_t>();
+        json["width"].get_to(this->width);
+        json["height"].get_to(this->height);
 
-        this->tile_width  = json["tilewidth"].template get<std::size_t>();
-        this->tile_height = json["tileheight"].template get<std::size_t>();
+        json["tilewidth"].get_to(this->tile_width);
+        json["tileheight"].get_to(this->tile_height);
 
         for (auto &tileset_json : json["tilesets"].items()) {
             auto &tileset   = tileset_json.value();
-            auto  first_gid = tileset["firstgid"].template get<std::size_t>();
-            auto  source    = tileset["source"].template get<std::string>();
+            auto  first_gid = tileset["firstgid"].get<std::size_t>();
+            auto  source    = tileset["source"].get<std::string>();
             auto  asset     = asset_store::get_asset(source);
 
             tilesets.try_emplace(first_gid, std::make_unique<Tileset>(asset->get_preprocessed<nlohmann::json>()));
         }
         for (auto &layer : json["layers"]) {
-            auto id = layer["id"].template get<std::size_t>();
+            auto id = layer["id"].get<std::size_t>();
 
             layers[id] = std::make_unique<Layer>(this, layer);
         }
