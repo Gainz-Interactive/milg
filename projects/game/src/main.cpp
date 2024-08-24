@@ -18,12 +18,10 @@ class GraphicsLayer : public Layer {
 public:
     std::shared_ptr<VulkanContext> context = nullptr;
     // This will hold whatever we render in the layer
-    std::shared_ptr<Texture> framebuffer = nullptr;
-    // Some random texture to draw
-    std::shared_ptr<Texture>     test_texture = nullptr;
-    std::shared_ptr<SpriteBatch> sprite_batch = nullptr;
-    std::unique_ptr<Map>         map;
-    std::vector<Tile>            tiles;
+    std::shared_ptr<Texture>                        framebuffer = nullptr;
+    std::map<std::string, std::shared_ptr<Texture>> textures;
+    std::shared_ptr<SpriteBatch>                    sprite_batch = nullptr;
+    std::unique_ptr<Map>                            map;
 
     void on_attach() override {
         MILG_INFO("Initializing Graphics layer");
@@ -40,14 +38,13 @@ public:
 
         auto map_data = asset_store::get_asset("map_desert");
         this->map     = std::make_unique<Map>(map_data->get_preprocessed<nlohmann::json>());
-        auto layer    = this->map->get_layer(1);
-        this->tiles   = layer->get_tiles();
 
-        auto tileset = this->map->get_tileset_for_gid(1);
+        for (auto &tileset : this->map->get_tilesets()) {
+            auto data    = asset_store::get_asset(tileset->get_source().string());
+            auto name    = tileset->get_name();
+            auto texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
 
-        {
-            auto data          = asset_store::get_asset(tileset->get_source().string());
-            this->test_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
+            this->textures[name] = texture;
         }
 
         this->framebuffer =
@@ -89,8 +86,10 @@ public:
         sprite_batch->reset();
         sprite_batch->begin_batch(mat);
 
-        for (auto &tile : this->tiles) {
-            sprite_batch->draw_sprite(tile.sprite, test_texture);
+        if (auto tiles = map->get_layer("Ground")) {
+            for (auto &tile : *tiles) {
+                sprite_batch->draw_sprite(tile.sprite, textures[tile.tileset->get_name()]);
+            }
         }
 
         // After drawing, build_batches should be called, this copies over data to the appropriate buffers

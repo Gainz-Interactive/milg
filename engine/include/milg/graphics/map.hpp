@@ -11,12 +11,6 @@
 namespace milg {
     typedef std::size_t Gid;
 
-    struct Tile {
-        Gid gid;
-
-        graphics::Sprite sprite;
-    };
-
     class Tileset {
     public:
         Tileset() = delete;
@@ -31,6 +25,10 @@ namespace milg {
 
         const std::filesystem::path &get_source();
 
+        const std::string &get_name();
+
+        std::size_t get_tile_count();
+
         std::size_t get_width();
         std::size_t get_height();
 
@@ -40,6 +38,10 @@ namespace milg {
         glm::vec4 get_uv(Gid gid);
 
     private:
+        std::string name;
+
+        std::size_t tile_count;
+
         std::size_t width;
         std::size_t height;
 
@@ -54,43 +56,32 @@ namespace milg {
         std::filesystem::path source;
     };
 
+    struct Tile {
+        Gid gid;
+
+        graphics::Sprite         sprite;
+        std::shared_ptr<Tileset> tileset;
+    };
+
     class Map {
     public:
-        class Layer {
-        public:
-            enum class Type {
-                TILE,
-                OBJECT,
-            };
+        typedef std::size_t Id;
 
-            Layer() = delete;
-            Layer(Map *map, const nlohmann::json &json);
-            Layer(const Layer &) = default;
-            Layer(Layer &&)      = default;
+        enum class LayerType {
+            TILE,
+            OBJECT,
+        };
 
-            Layer &operator=(const Layer &) = default;
-            Layer &operator=(Layer &&)      = default;
+        struct Object {
+            const Id id;
 
-            ~Layer() = default;
+            const std::string name;
+            const std::string type;
 
-            std::vector<Tile> get_tiles();
+            glm::vec2 pos;
+            glm::vec2 size;
 
-            std::size_t get_width();
-            std::size_t get_height();
-
-            Type get_type();
-
-        private:
-            Type type;
-
-            std::vector<Gid> gids;
-
-            std::size_t x;
-            std::size_t y;
-            std::size_t width;
-            std::size_t height;
-
-            Map *map;
+            std::map<std::string, nlohmann::json> properties;
         };
 
         Map() = delete;
@@ -109,24 +100,31 @@ namespace milg {
         std::size_t get_tile_width();
         std::size_t get_tile_height();
 
-        Layer               *get_layer(std::size_t id);
-        std::vector<Layer &> get_layers();
-
-        Tileset *get_tileset_for_gid(Gid gid);
+        std::vector<Tile>                    *get_layer(const std::string &name);
+        std::shared_ptr<Object>               get_object(const char *name, const char *type);
+        std::vector<std::shared_ptr<Tileset>> get_tilesets();
 
     private:
+        void process_tile_layer(std::map<Gid, std::weak_ptr<Tileset>>, const nlohmann::json &json);
+        void process_object_layer(const nlohmann::json &json);
+
         std::size_t width;
         std::size_t height;
 
         std::size_t tile_width;
         std::size_t tile_height;
 
-        std::map<std::size_t, std::unique_ptr<Tileset>> tilesets;
-        std::map<std::size_t, std::unique_ptr<Layer>>   layers;
+        std::vector<std::shared_ptr<Tileset>> tilesets;
+
+        std::map<std::string, std::vector<Tile>> layers;
+
+        std::vector<std::shared_ptr<Object>>              objects;
+        std::multimap<std::string, std::weak_ptr<Object>> object_name_map;
+        std::multimap<std::string, std::weak_ptr<Object>> object_type_map;
     };
 
-    NLOHMANN_JSON_SERIALIZE_ENUM(Map::Layer::Type, {
-                                                       {Map::Layer::Type::TILE, "tilelayer"},
-                                                       {Map::Layer::Type::OBJECT, "objectgroup"},
-                                                   })
+    NLOHMANN_JSON_SERIALIZE_ENUM(Map::LayerType, {
+                                                     {Map::LayerType::TILE, "tilelayer"},
+                                                     {Map::LayerType::OBJECT, "objectgroup"},
+                                                 })
 } // namespace milg
