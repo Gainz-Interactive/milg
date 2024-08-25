@@ -5,41 +5,25 @@
 #include <fstream>
 
 namespace milg {
-    Asset::Asset(Type type, char *data, std::size_t size) : type(type), data(Bytes{data, size}) {
+    Asset::Asset(Type type, char *data, std::size_t size) : type(type), data(Asset::Bytes{data, size}) {
     }
 
     Asset::Asset(Type type, std::any data) : type(type), data(data) {
-    }
-
-    char *Asset::get_data() {
-        if (!std::holds_alternative<Bytes>(this->data)) {
-            return nullptr;
-        }
-
-        auto &bytes = std::get<Bytes>(this->data);
-
-        return bytes.data;
-    }
-
-    std::size_t Asset::get_size() {
-        if (!std::holds_alternative<Bytes>(this->data)) {
-            return 0;
-        }
-
-        auto &bytes = std::get<Bytes>(this->data);
-
-        return bytes.size;
     }
 
     Asset::Type Asset::get_type() {
         return this->type;
     }
 
-    static std::shared_ptr<Asset> preprocess(std::ifstream &stream, Asset::Preprocessor preprocessor,
+    Asset::Bytes &Asset::get_bytes() {
+        return this->get<Bytes>();
+    }
+
+    static std::shared_ptr<Asset> process(std::ifstream &stream, Asset::Processor processor,
                                              Asset::Type type) {
-        // These preprocessors can consume streams.
-        switch (preprocessor) {
-        case Asset::Preprocessor::JSON:
+        // These processors can consume streams.
+        switch (processor) {
+        case Asset::Processor::JSON:
             return std::make_shared<Asset>(type, std::any(nlohmann::json::parse(stream)));
         default:
             break;
@@ -53,8 +37,8 @@ namespace milg {
         stream.seekg(0, std::ios::beg);
         stream.read(data, size);
 
-        // These preprocessors require a baitų šmotas.
-        switch (preprocessor) {
+        // These processors require a baitų šmotas.
+        switch (processor) {
         default:
             break;
         }
@@ -63,12 +47,12 @@ namespace milg {
     }
 
     std::shared_ptr<Asset> Asset::Loader::load(Type type, const std::filesystem::path &path,
-                                               Preprocessor preprocessor) {
+                                               Processor processor) {
         std::ifstream stream(path, std::ios::binary | std::ios::in);
         if (!stream.is_open()) {
             throw file_not_found_error(path);
         }
 
-        return preprocess(stream, preprocessor, type);
+        return process(stream, processor, type);
     }
 } // namespace milg
