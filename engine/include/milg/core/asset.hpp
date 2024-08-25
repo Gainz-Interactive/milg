@@ -10,13 +10,18 @@
 namespace milg {
     class Asset {
     public:
+        struct Bytes {
+            char       *data;
+            std::size_t size;
+        };
+
         enum class Type {
             DATA,
             IMAGE,
             SOUND,
         };
 
-        enum class Preprocessor {
+        enum class Processor {
             NONE,
             JSON,
         };
@@ -32,45 +37,22 @@ namespace milg {
 
         virtual ~Asset() = default;
 
-        /**
-         * Get unprocessed baitų šmotas.
-         * Will be null if the data has been preprocessed.
-         */
-        char *get_data();
-        /**
-         * Get size of unprocessed baitų šmotas.
-         * Will be 0 if the data has been preprocessed.
-         */
-        std::size_t get_size();
-
         Type get_type();
-        /**
-         * Get preprocessed data if a preprocessor was run.
-         * If no preprocessor was run, the object will have no value.
-         */
-        template <typename T> T &get_preprocessed() {
-            assert(std::holds_alternative<std::any>(this->data));
+        template <typename T> T &get() {
+            assert(this->data.has_value());
 
-            auto &any = std::get<std::any>(this->data);
-
-            assert(any.has_value());
-
-            return std::any_cast<T &>(any);
+            return std::any_cast<T &>(this->data);
         }
+        Bytes &get_bytes();
 
         class Loader {
         public:
-            static std::shared_ptr<Asset> load(Type type, const std::filesystem::path &path, Preprocessor preprocessor);
+            static std::shared_ptr<Asset> load(Type type, const std::filesystem::path &path, Processor processor);
         };
 
     private:
-        struct Bytes {
-            char       *data;
-            std::size_t size;
-        };
-
         Type                          type;
-        std::variant<Bytes, std::any> data;
+        std::any data;
     };
 
     NLOHMANN_JSON_SERIALIZE_ENUM(Asset::Type, {
@@ -79,8 +61,8 @@ namespace milg {
                                                   {Asset::Type::IMAGE, "image"},
                                                   {Asset::Type::SOUND, "sound"},
                                               })
-    NLOHMANN_JSON_SERIALIZE_ENUM(Asset::Preprocessor, {
-                                                          {Asset::Preprocessor::NONE, nullptr},
-                                                          {Asset::Preprocessor::JSON, "json"},
+    NLOHMANN_JSON_SERIALIZE_ENUM(Asset::Processor, {
+                                                          {Asset::Processor::NONE, nullptr},
+                                                          {Asset::Processor::JSON, "json"},
                                                       })
 } // namespace milg

@@ -97,20 +97,20 @@ public:
             .mag_filter = VK_FILTER_NEAREST,
         };
         {
-            auto data            = asset_store::get_asset("map");
-            this->albedo_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
+            auto data            = asset_store::get_asset("map")->get_bytes();
+            this->albedo_texture = Texture::load_from_data(context, texture_info, data.data, data.size);
         }
         {
-            auto data              = asset_store::get_asset("map_emissive");
-            this->emissive_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
+            auto data              = asset_store::get_asset("map_emissive")->get_bytes();
+            this->emissive_texture = Texture::load_from_data(context, texture_info, data.data, data.size);
         }
         {
-            auto data           = asset_store::get_asset("noise");
-            this->noise_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
+            auto data           = asset_store::get_asset("noise")->get_bytes();
+            this->noise_texture = Texture::load_from_data(context, texture_info, data.data, data.size);
         }
         {
-            auto data           = asset_store::get_asset("light");
-            this->light_texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
+            auto data           = asset_store::get_asset("light")->get_bytes();
+            this->light_texture = Texture::load_from_data(context, texture_info, data.data, data.size);
         }
 
         this->sprite_batch = SpriteBatch::create(context, albedo_buffer->format(), 10000);

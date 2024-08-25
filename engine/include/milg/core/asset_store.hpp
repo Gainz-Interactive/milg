@@ -13,7 +13,7 @@ namespace milg::asset_store {
     std::map<std::string, std::shared_ptr<Asset>> get_assets(Asset::Type type);
 
     void load_asset(const std::string &name, const std::filesystem::path &path, Asset::Type type = Asset::Type::DATA,
-                    Asset::Preprocessor preprocessor = Asset::Preprocessor::NONE);
+                    Asset::Processor processor = Asset::Processor::NONE);
     void load_assets(const std::filesystem::path &path);
     void unload_assets();
 } // namespace milg::asset_store

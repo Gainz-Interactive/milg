@@ -149,14 +149,15 @@ namespace milg::graphics {
         auto load_shader_module = [&](const std::string &shader_id) -> VkShaderModule {
             MILG_INFO("Loading shader module: {}", shader_id);
 
-            auto buffer = asset_store::get_asset(shader_id);
+            auto shader = asset_store::get_asset(shader_id);
+            auto buffer = shader->get_bytes();
 
             const VkShaderModuleCreateInfo shader_module_info = {
                 .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
                 .pNext    = nullptr,
                 .flags    = 0,
-                .codeSize = buffer->get_size(),
-                .pCode    = reinterpret_cast<const uint32_t *>(buffer->get_data()),
+                .codeSize = buffer.size,
+                .pCode    = reinterpret_cast<const uint32_t *>(buffer.data),
             };
 
             VkShaderModule shader_module = VK_NULL_HANDLE;
