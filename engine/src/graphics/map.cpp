@@ -98,6 +98,24 @@ namespace milg {
     }
 
     std::shared_ptr<Map::Object> Map::get_object(const char *name, const char *type) {
+        if (name != nullptr) {
+            auto range = this->object_name_map.equal_range(name);
+
+            for (auto iter = range.first; iter != range.second; iter++) {
+                auto object = iter->second.lock();
+
+                if (object->type == type) {
+                    return object;
+                }
+            }
+        }
+
+        if (type != nullptr) {
+            if (auto iter = this->object_type_map.find(type); iter != this->object_type_map.end()) {
+                return iter->second.lock();
+            }
+        }
+
         return nullptr;
     }
 
