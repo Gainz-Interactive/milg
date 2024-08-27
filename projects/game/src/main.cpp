@@ -8,6 +8,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/random.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 #include <cstdint>
 
@@ -18,10 +20,9 @@ class GraphicsLayer : public Layer {
 public:
     std::shared_ptr<VulkanContext> context = nullptr;
     // This will hold whatever we render in the layer
-    std::shared_ptr<Texture>                        framebuffer = nullptr;
-    std::map<std::string, std::shared_ptr<Texture>> textures;
-    std::shared_ptr<SpriteBatch>                    sprite_batch = nullptr;
-    std::unique_ptr<Map>                            map;
+    std::shared_ptr<Texture>     framebuffer  = nullptr;
+    std::shared_ptr<SpriteBatch> sprite_batch = nullptr;
+    std::shared_ptr<Map>         map;
 
     void on_attach() override {
         MILG_INFO("Initializing Graphics layer");
@@ -36,16 +37,7 @@ public:
             .mag_filter = VK_FILTER_NEAREST,
         };
 
-        auto map_data = asset_store::get_asset("map_desert");
-        this->map     = std::make_unique<Map>(map_data->get_preprocessed<nlohmann::json>());
-
-        for (auto &tileset : this->map->get_tilesets()) {
-            auto data    = asset_store::get_asset(tileset->get_source().string());
-            auto name    = tileset->get_name();
-            auto texture = Texture::load_from_data(context, texture_info, data->get_data(), data->get_size());
-
-            this->textures[name] = texture;
-        }
+        this->map = AssetStore::load<Map>("maps/desert.tmj");
 
         this->framebuffer =
             Texture::create(context,
@@ -86,9 +78,14 @@ public:
         sprite_batch->reset();
         sprite_batch->begin_batch(mat);
 
-        if (auto tiles = map->get_layer("Ground")) {
-            for (auto &tile : *tiles) {
-                sprite_batch->draw_sprite(tile.sprite, textures[tile.tileset->get_name()]);
+        auto       tile_size = this->map->get_tile_size();
+        glm::ivec2 cursor;
+
+        for (cursor.y = 0; cursor.y < framebuffer->height(); cursor.y += tile_size.y) {
+            for (cursor.x = 0; cursor.x < framebuffer->width(); cursor.x += tile_size.x) {
+                for (auto &tile : this->map->get_tiles(cursor)) {
+                    sprite_batch->draw_sprite(tile->sprite, tile->tileset->get_texture());
+                }
             }
         }
 
@@ -166,9 +163,8 @@ public:
     Milgame(int argc, char **argv, const WindowCreateInfo &window_info) : Application(argc, argv, window_info) {
         auto bindir = std::filesystem::path(argv[0]).parent_path();
 
-        asset_store::add_search_path((bindir / "data").lexically_normal());
-        asset_store::add_search_path(ASSET_DIR);
-        asset_store::load_assets(ASSET_DIR "/assets.json");
+        AssetStore::add_search_path((bindir / "data").lexically_normal());
+        AssetStore::add_search_path(ASSET_DIR);
 
         push_layer(new GraphicsLayer());
     }
@@ -178,14 +174,11 @@ public:
 };
 
 int main(int argc, char **argv) {
-    WindowCreateInfo window_info = {
-        .title  = "Milg",
-        .width  = 1600,
-        .height = 900,
-    };
-
-    Milgame app(argc, argv, window_info);
-    app.run();
-
-    return 0;
+    return Milgame(argc, argv,
+                   {
+                       .title  = "Milg",
+                       .width  = 1600,
+                       .height = 900,
+                   })
+        .run();
 }

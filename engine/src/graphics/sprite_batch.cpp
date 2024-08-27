@@ -1,6 +1,6 @@
 #include <milg/graphics/sprite_batch.hpp>
 
-#include <milg/core/asset_store.hpp>
+#include <milg/core/asset.hpp>
 #include <milg/core/logging.hpp>
 #include <milg/graphics/vk_context.hpp>
 
@@ -10,14 +10,15 @@
 #include <fstream>
 
 namespace milg::graphics {
-    VkShaderModule load_shader_module(char *data, std::size_t size, const std::shared_ptr<VulkanContext> &context) {
+    VkShaderModule load_shader_module(const std::shared_ptr<Bytes>         &bytes,
+                                      const std::shared_ptr<VulkanContext> &context) {
 
         const VkShaderModuleCreateInfo shader_module_info = {
             .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
             .pNext    = nullptr,
             .flags    = 0,
-            .codeSize = size,
-            .pCode    = reinterpret_cast<const uint32_t *>(data),
+            .codeSize = bytes->size(),
+            .pCode    = reinterpret_cast<const uint32_t *>(bytes->data()),
         };
 
         VkShaderModule shader_module;
@@ -31,25 +32,21 @@ namespace milg::graphics {
                                                      VkFormat albdedo_render_format, uint32_t capacity) {
         MILG_INFO("Creating sprite batch with capacity: {}", capacity);
 
-        auto vertex_shader = asset_store::get_asset("sprite_batch.vert.spv");
+        auto vertex_shader = AssetStore::load<Bytes>("shaders/sprite_batch.vert.spv");
         if (!vertex_shader) {
             MILG_ERROR("Vertex shader not loaded");
 
             return nullptr;
         }
-        auto vertex_shader_data = vertex_shader->get_bytes();
-        auto vertex_shader_module =
-            load_shader_module(vertex_shader_data.data, vertex_shader_data.size, context);
+        auto vertex_shader_module = load_shader_module(vertex_shader, context);
 
-        auto fragment_shader = asset_store::get_asset("sprite_batch.frag.spv");
+        auto fragment_shader = AssetStore::load<Bytes>("shaders/sprite_batch.frag.spv");
         if (!fragment_shader) {
             MILG_ERROR("Fragment shader not loaded");
 
             return nullptr;
         }
-        auto fragment_shader_data = fragment_shader->get_bytes();
-        auto fragment_shader_module =
-            load_shader_module(fragment_shader_data.data, fragment_shader_data.size, context);
+        auto fragment_shader_module = load_shader_module(fragment_shader, context);
 
         if (vertex_shader_module == VK_NULL_HANDLE || fragment_shader_module == VK_NULL_HANDLE) {
             MILG_ERROR("Failed to load shader modules");

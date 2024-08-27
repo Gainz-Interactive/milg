@@ -1,6 +1,7 @@
 #pragma once
 
 #include <milg/audio/node.hpp>
+#include <milg/core/types.hpp>
 
 #include <miniaudio.h>
 
@@ -11,7 +12,7 @@ namespace milg::audio {
         Sound(const Sound &) = delete;
         Sound(Sound &&)      = default;
 
-        Sound(char *data, std::size_t size);
+        Sound(const std::shared_ptr<Bytes> &bytes);
 
         ~Sound();
 

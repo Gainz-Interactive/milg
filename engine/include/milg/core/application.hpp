@@ -16,7 +16,7 @@ namespace milg {
         Application(int argc, char **argv, const WindowCreateInfo &window_create_info);
         virtual ~Application();
 
-        void run(float min_frametime = 0.0f);
+        int  run(float min_frametime = 0.0f);
         void close();
 
         void push_layer(class Layer *layer);

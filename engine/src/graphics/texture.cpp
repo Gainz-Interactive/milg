@@ -1,3 +1,5 @@
+#include <milg/core/asset.hpp>
+#include <milg/core/error.hpp>
 #include <milg/graphics/texture.hpp>
 
 #include <milg/core/logging.hpp>
@@ -9,13 +11,12 @@
 
 namespace milg::graphics {
     std::shared_ptr<Texture> Texture::load_from_data(const std::shared_ptr<VulkanContext> &context,
-                                                     const TextureCreateInfo &create_info, const char *buf,
-                                                     std::size_t size) {
+                                                     const TextureCreateInfo &create_info, const Bytes &bytes) {
         int32_t  width    = 0;
         int32_t  height   = 0;
         int32_t  channels = 0;
-        stbi_uc *data = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(buf), size, &width, &height, &channels,
-                                              STBI_rgb_alpha);
+        stbi_uc *data     = stbi_load_from_memory(reinterpret_cast<const stbi_uc *>(bytes.data()), bytes.size(), &width,
+                                                  &height, &channels, STBI_rgb_alpha);
 
         if (!data) {
             MILG_ERROR("Failed to load texture data: {}", stbi_failure_reason());
@@ -470,5 +471,27 @@ namespace milg::graphics {
 
     uint32_t Texture::layer_count() const {
         return m_layer_count;
+    }
+} // namespace milg::graphics
+
+namespace milg::graphics {
+    Texture::Loader::Loader(std::weak_ptr<VulkanContext> ctx) : ctx(ctx) {
+    }
+
+    std::shared_ptr<void> Texture::Loader::load(std::ifstream &stream) {
+        const TextureCreateInfo texture_info = {
+            .format     = VK_FORMAT_R8G8B8A8_UNORM,
+            .usage      = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_STORAGE_BIT,
+            .min_filter = VK_FILTER_NEAREST,
+            .mag_filter = VK_FILTER_NEAREST,
+        };
+
+        if (auto ctx = this->ctx.lock()) {
+            return Texture::load_from_data(ctx, texture_info, Asset::Loader::read_stream(stream));
+        } else {
+            throw milg::vulkan_context_error::destroyed();
+        }
+
+        return nullptr;
     }
 } // namespace milg::graphics

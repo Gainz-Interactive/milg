@@ -3,7 +3,6 @@ set(
     SOURCE_FILES
     "src/core/application.cpp"
     "src/core/asset.cpp"
-    "src/core/asset_store.cpp"
     "src/core/imgui_layer.cpp"
     "src/core/layer.cpp"
     "src/core/logging.cpp"
