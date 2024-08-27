@@ -14,4 +14,19 @@ namespace milg {
     private:
         std::filesystem::path path;
     };
+
+    class invalid_asset_type_error : public std::runtime_error {
+    public:
+        invalid_asset_type_error() : std::runtime_error("no asset loader exists for requested type") {
+        }
+    };
+
+    class vulkan_context_error {
+    public:
+        class destroyed : public std::runtime_error {
+        public:
+            destroyed() : std::runtime_error("Vulkan context was destroyed unexpectedly") {
+            }
+        };
+    };
 } // namespace milg

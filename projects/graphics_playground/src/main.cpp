@@ -96,48 +96,37 @@ public:
             .min_filter = VK_FILTER_NEAREST,
             .mag_filter = VK_FILTER_NEAREST,
         };
-        {
-            auto data            = asset_store::get_asset("map")->get_bytes();
-            this->albedo_texture = Texture::load_from_data(context, texture_info, data.data, data.size);
-        }
-        {
-            auto data              = asset_store::get_asset("map_emissive")->get_bytes();
-            this->emissive_texture = Texture::load_from_data(context, texture_info, data.data, data.size);
-        }
-        {
-            auto data           = asset_store::get_asset("noise")->get_bytes();
-            this->noise_texture = Texture::load_from_data(context, texture_info, data.data, data.size);
-        }
-        {
-            auto data           = asset_store::get_asset("light")->get_bytes();
-            this->light_texture = Texture::load_from_data(context, texture_info, data.data, data.size);
-        }
+
+        this->albedo_texture   = AssetStore::load<Texture>("textures/map.png");
+        this->emissive_texture = AssetStore::load<Texture>("textures/map_emissive.png");
+        this->noise_texture    = AssetStore::load<Texture>("textures/noise.png");
+        this->light_texture    = AssetStore::load<Texture>("textures/light.png");
 
         this->sprite_batch = SpriteBatch::create(context, albedo_buffer->format(), 10000);
 
         this->pipeline_factory      = PipelineFactory::create(context);
         this->voronoi_seed_pipeline = this->pipeline_factory->create_compute_pipeline(
-            "voronoi_seed", "voronoi_seed.comp.spv",
+            "voronoi_seed", "shaders/voronoi_seed.comp.spv",
             {PipelineOutputDescription{
                 .format = VK_FORMAT_R8G8B8A8_UNORM, .width = window->width(), .height = window->height()}},
             2);
         this->voronoi_pipeline = this->pipeline_factory->create_compute_pipeline(
-            "voronoi", "voronoi.comp.spv",
+            "voronoi", "shaders/voronoi.comp.spv",
             {PipelineOutputDescription{
                 .format = VK_FORMAT_R8G8B8A8_UNORM, .width = window->width(), .height = window->height()}},
             2, sizeof(float) * 6);
         this->distance_field_pipeline = this->pipeline_factory->create_compute_pipeline(
-            "distance_field", "distance_field.comp.spv",
+            "distance_field", "shaders/distance_field.comp.spv",
             {PipelineOutputDescription{
                 .format = VK_FORMAT_R8G8_UNORM, .width = window->width(), .height = window->height()}},
             2);
         this->noise_seed_pipeline = this->pipeline_factory->create_compute_pipeline(
-            "noise_seed", "noise_seed.comp.spv",
+            "noise_seed", "shaders/noise_seed.comp.spv",
             {PipelineOutputDescription{
                 .format = VK_FORMAT_R8_UNORM, .width = noise_texture->width(), .height = noise_texture->height()}},
             2, sizeof(float));
         this->raytrace_pipeline = this->pipeline_factory->create_compute_pipeline(
-            "raytrace", "raytrace.comp.spv",
+            "raytrace", "shaders/raytrace.comp.spv",
             {PipelineOutputDescription{.format = VK_FORMAT_R16G16B16A16_SFLOAT,
                                        .width  = static_cast<uint32_t>(window->width() * rt_scale),
                                        .height = static_cast<uint32_t>(window->height() * rt_scale)},
@@ -146,7 +135,7 @@ public:
                                        .height = static_cast<uint32_t>(window->height() * rt_scale)}},
             6, sizeof(raytrace_pass_constants));
         this->rt_upscale_pipeline = this->pipeline_factory->create_compute_pipeline(
-            "rt_upscale", "rt_upscale.comp.spv",
+            "rt_upscale", "shaders/rt_upscale.comp.spv",
             {PipelineOutputDescription{.format = VK_FORMAT_R16G16B16A16_SFLOAT,
                                        .width  = static_cast<uint32_t>(window->width() * rt_scale),
                                        .height = static_cast<uint32_t>(window->height() * rt_scale)},
@@ -154,7 +143,7 @@ public:
                  .format = VK_FORMAT_R16G16B16A16_SFLOAT, .width = window->width(), .height = window->height()}},
             2, sizeof(rt_upscale_pass_constants));
         this->composite_pipeline = this->pipeline_factory->create_compute_pipeline(
-            "composite", "composite.comp.spv",
+            "composite", "shaders/composite.comp.spv",
             {PipelineOutputDescription{
                 .format = VK_FORMAT_R8G8B8A8_UNORM, .width = window->width(), .height = window->height()}},
             4, sizeof(composite_pass_constants));
@@ -537,9 +526,8 @@ public:
         : Application(argc, argv, window_info) {
         auto bindir = std::filesystem::path(argv[0]).parent_path();
 
-        asset_store::add_search_path((bindir / "data").lexically_normal());
-        asset_store::add_search_path(ASSET_DIR);
-        asset_store::load_assets(ASSET_DIR "/assets.json");
+        AssetStore::add_search_path((bindir / "data").lexically_normal());
+        AssetStore::add_search_path(ASSET_DIR);
 
         push_layer(new RTLight());
     }

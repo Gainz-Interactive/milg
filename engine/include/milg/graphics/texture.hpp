@@ -1,5 +1,6 @@
 #pragma once
 
+#include <milg/core/asset.hpp>
 #include <milg/graphics/vk_context.hpp>
 
 #include <cstdint>
@@ -20,9 +21,26 @@ namespace milg::graphics {
 
     class Texture {
     public:
+        class Loader : public milg::Asset::Loader {
+        public:
+            Loader() = delete;
+            Loader(std::weak_ptr<VulkanContext> ctx);
+            Loader(const Loader &) = default;
+            Loader(Loader &&)      = default;
+
+            Loader &operator=(const Loader &) = default;
+            Loader &operator=(Loader &&)      = default;
+
+            ~Loader() = default;
+
+            std::shared_ptr<void> load(std::ifstream &stream);
+
+        private:
+            std::weak_ptr<VulkanContext> ctx;
+        };
+
         static std::shared_ptr<Texture> load_from_data(const std::shared_ptr<VulkanContext> &context,
-                                                       const TextureCreateInfo &create_info, const char *data,
-                                                       std::size_t size);
+                                                       const TextureCreateInfo &create_info, const Bytes &bytes);
 
         static std::shared_ptr<Texture> create(const std::shared_ptr<VulkanContext> &context,
                                                const TextureCreateInfo &create_info, uint32_t width, uint32_t height);

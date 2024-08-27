@@ -15,11 +15,11 @@ class AudioLayer : public milg::Layer {
         vocoder_node = std::make_shared<milg::audio::VocoderNode>();
         vocoder_node->attach_output<0, 0>(milg::audio::get_endpoint());
 
-        for (auto &[name, asset] : milg::asset_store::get_assets(milg::Asset::Type::SOUND)) {
-            auto data = asset->get_bytes();
-
-            sounds[name] = std::make_shared<milg::audio::Sound>(data.data, data.size);
+#if 0
+        for (auto &[path, asset] : milg::AssetStore::get_loaded<milg::audio::Sound>()) {
+            sounds[path] = asset;
         }
+#endif
     }
 
     void on_detach() override {

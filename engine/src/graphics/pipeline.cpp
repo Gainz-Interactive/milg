@@ -1,6 +1,6 @@
 #include <milg/graphics/pipeline.hpp>
 
-#include <milg/core/asset_store.hpp>
+#include <milg/core/asset.hpp>
 #include <milg/core/logging.hpp>
 
 #include <array>
@@ -149,15 +149,14 @@ namespace milg::graphics {
         auto load_shader_module = [&](const std::string &shader_id) -> VkShaderModule {
             MILG_INFO("Loading shader module: {}", shader_id);
 
-            auto shader = asset_store::get_asset(shader_id);
-            auto buffer = shader->get_bytes();
+            auto shader = AssetStore::load<Bytes>(shader_id);
 
             const VkShaderModuleCreateInfo shader_module_info = {
                 .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
                 .pNext    = nullptr,
                 .flags    = 0,
-                .codeSize = buffer.size,
-                .pCode    = reinterpret_cast<const uint32_t *>(buffer.data),
+                .codeSize = shader->size(),
+                .pCode    = reinterpret_cast<const uint32_t *>(shader->data()),
             };
 
             VkShaderModule shader_module = VK_NULL_HANDLE;

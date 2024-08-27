@@ -1,58 +1,57 @@
 #include <milg/core/asset.hpp>
-#include <milg/core/error.hpp>
-#include <milg/core/logging.hpp>
-
-#include <fstream>
+#include <nlohmann/json.hpp>
 
 namespace milg {
-    Asset::Asset(Type type, char *data, std::size_t size) : type(type), data(Asset::Bytes{data, size}) {
+    std::vector<std::filesystem::path>                        AssetStore::search_paths;
+    std::map<std::type_index, std::shared_ptr<Asset::Loader>> AssetStore::loaders{
+        {std::type_index(typeid(Bytes)), std::make_shared<Asset::Loader>()},
+        {std::type_index(typeid(nlohmann::json)), std::make_shared<Asset::JsonLoader>()},
+    };
+    std::map<std::filesystem::path, std::shared_ptr<void>> AssetStore::assets;
+} // namespace milg
+
+namespace milg {
+    std::shared_ptr<void> Asset::Loader::load(std::ifstream &stream) {
+        return std::make_shared<Bytes>(this->read_stream(stream));
     }
 
-    Asset::Asset(Type type, std::any data) : type(type), data(data) {
+    const std::filesystem::path &Asset::Loader::get_current_path() {
+        return this->path;
     }
 
-    Asset::Type Asset::get_type() {
-        return this->type;
-    }
-
-    Asset::Bytes &Asset::get_bytes() {
-        return this->get<Bytes>();
-    }
-
-    static std::shared_ptr<Asset> process(std::ifstream &stream, Asset::Processor processor,
-                                             Asset::Type type) {
-        // These processors can consume streams.
-        switch (processor) {
-        case Asset::Processor::JSON:
-            return std::make_shared<Asset>(type, std::any(nlohmann::json::parse(stream)));
-        default:
-            break;
-        }
-
+    Bytes Asset::Loader::read_stream(std::ifstream &stream) {
         stream.seekg(0, std::ios::end);
 
         auto size = stream.tellg();
-        auto data = new char[size];
+        auto data = std::vector<std::byte>(size);
 
         stream.seekg(0, std::ios::beg);
-        stream.read(data, size);
+        stream.read(reinterpret_cast<char *>(data.data()), size);
 
-        // These processors require a baitų šmotas.
-        switch (processor) {
-        default:
-            break;
-        }
+        data.resize(stream.gcount());
 
-        return std::make_shared<Asset>(type, data, size);
+        return data;
     }
 
-    std::shared_ptr<Asset> Asset::Loader::load(Type type, const std::filesystem::path &path,
-                                               Processor processor) {
-        std::ifstream stream(path, std::ios::binary | std::ios::in);
-        if (!stream.is_open()) {
-            throw file_not_found_error(path);
-        }
+    void Asset::Loader::set_current_path(const std::filesystem::path &path) {
+        this->path = path;
+    }
 
-        return process(stream, processor, type);
+    std::shared_ptr<void> Asset::JsonLoader::load(std::ifstream &stream) {
+        auto json = std::make_shared<nlohmann::json>(nullptr);
+
+        stream >> *json;
+
+        return json;
+    }
+} // namespace milg
+
+namespace milg {
+    void AssetStore::add_search_path(const std::filesystem::path &path) {
+        AssetStore::search_paths.push_back(path);
+    }
+
+    void AssetStore::unload_all() {
+        AssetStore::assets.clear();
     }
 } // namespace milg

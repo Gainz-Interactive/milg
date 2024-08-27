@@ -1,11 +1,13 @@
 #include <milg/core/application.hpp>
 
 #include <milg/audio.hpp>
-#include <milg/core/asset_store.hpp>
+#include <milg/core/asset.hpp>
 #include <milg/core/events.hpp>
 #include <milg/core/layer.hpp>
 #include <milg/core/logging.hpp>
+#include <milg/graphics/map.hpp>
 #include <milg/graphics/swapchain.hpp>
+#include <milg/graphics/texture.hpp>
 #include <milg/graphics/vk_context.hpp>
 
 #include <chrono>
@@ -32,6 +34,9 @@ namespace milg {
             on_event(event);
         });
 
+        AssetStore::register_loader<graphics::Texture>(std::make_shared<graphics::Texture::Loader>(m_context));
+        AssetStore::register_loader<Map>(std::move(std::make_unique<Map::Loader>()));
+
         audio::init();
     }
 
@@ -46,11 +51,11 @@ namespace milg {
             delete layer;
         }
 
-        asset_store::unload_assets();
+        AssetStore::unload_all();
         audio::destroy();
     }
 
-    void Application::run(float min_frametime) {
+    int Application::run(float min_frametime) {
         auto     current_time   = std::chrono::high_resolution_clock::now();
         uint32_t elapsed_frames = 0;
         float    elapsed_time   = 0.0f;
@@ -224,6 +229,8 @@ namespace milg {
                 elapsed_time   = 0.0;
             }
         }
+
+        return EXIT_SUCCESS;
     }
 
     void Application::close() {

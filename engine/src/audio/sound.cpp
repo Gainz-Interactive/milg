@@ -7,14 +7,14 @@
 static const ma_uint32 DEFAULT_FLAGS = MA_SOUND_FLAG_NO_DEFAULT_ATTACHMENT;
 
 namespace milg::audio {
-    Sound::Sound(char *data, std::size_t size) {
+    Sound::Sound(const std::shared_ptr<Bytes> &bytes) {
         auto      engine         = get_engine();
         auto      sample_rate    = ma_engine_get_sample_rate(engine);
         auto      channels       = ma_engine_get_channels(engine);
         auto      decoder_config = ma_decoder_config_init(ma_format_f32, channels, sample_rate);
         ma_uint64 frame_count    = 0;
         void     *frames         = NULL;
-        auto      res            = ma_decode_memory(data, size, &decoder_config, &frame_count, &frames);
+        auto      res = ma_decode_memory(bytes->data(), bytes->size(), &decoder_config, &frame_count, &frames);
         if (res != MA_SUCCESS) {
             throw std::runtime_error("Decoding sound data failed");
         }
