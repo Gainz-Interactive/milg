@@ -37,7 +37,7 @@ public:
             .mag_filter = VK_FILTER_NEAREST,
         };
 
-        this->map = AssetStore::load<Map>("maps/desert.tmj");
+        this->map = *AssetStore::load<Map>("maps/desert.tmj");
 
         this->framebuffer =
             Texture::create(context,

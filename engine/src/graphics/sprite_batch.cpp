@@ -32,21 +32,24 @@ namespace milg::graphics {
                                                      VkFormat albdedo_render_format, uint32_t capacity) {
         MILG_INFO("Creating sprite batch with capacity: {}", capacity);
 
-        auto vertex_shader = AssetStore::load<Bytes>("shaders/sprite_batch.vert.spv");
-        if (!vertex_shader) {
+        VkShaderModule vertex_shader_module   = VK_NULL_HANDLE;
+        VkShaderModule fragment_shader_module = VK_NULL_HANDLE;
+
+        if (auto shader = AssetStore::load<Bytes>("shaders/sprite_batch.vert.spv"); shader.has_value()) {
+            vertex_shader_module = load_shader_module(*shader, context);
+        } else {
             MILG_ERROR("Vertex shader not loaded");
 
             return nullptr;
         }
-        auto vertex_shader_module = load_shader_module(vertex_shader, context);
 
-        auto fragment_shader = AssetStore::load<Bytes>("shaders/sprite_batch.frag.spv");
-        if (!fragment_shader) {
+        if (auto shader = AssetStore::load<Bytes>("shaders/sprite_batch.frag.spv"); shader.has_value()) {
+            fragment_shader_module = load_shader_module(*shader, context);
+        } else {
             MILG_ERROR("Fragment shader not loaded");
 
             return nullptr;
         }
-        auto fragment_shader_module = load_shader_module(fragment_shader, context);
 
         if (vertex_shader_module == VK_NULL_HANDLE || fragment_shader_module == VK_NULL_HANDLE) {
             MILG_ERROR("Failed to load shader modules");

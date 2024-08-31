@@ -193,7 +193,7 @@ namespace milg {
         return objects;
     }
 
-    std::shared_ptr<void> Map::Loader::load(std::ifstream &stream) {
+    auto Map::Loader::load(std::ifstream &stream) -> LoadResult<void> {
         auto                                  json = nlohmann::json::parse(stream);
         std::vector<std::shared_ptr<Tileset>> tilesets;
         std::map<Gid, std::weak_ptr<Tileset>> tileset_gid_map;
@@ -203,19 +203,27 @@ namespace milg {
             auto source       = tileset_obj.at("source").get<std::string>();
             auto loader_path  = this->get_current_path();
             auto tileset_json = AssetStore::load<nlohmann::json>(loader_path.replace_filename(source));
-            auto texture_path = loader_path.parent_path().parent_path() / "textures";
-            auto tileset      = std::make_shared<Tileset>(
-                AssetStore::load<graphics::Texture>(texture_path / tileset_json->at("image").get<std::string>()),
-                glm::ivec2{
-                    tileset_json->at("tilewidth").get<int>(),
-                    tileset_json->at("tileheight").get<int>(),
-                },
-                tileset_json->at("columns").get<std::size_t>(), tileset_json->at("spacing").get<std::size_t>(),
-                tileset_json->at("margin").get<std::size_t>());
+            if (!tileset_json.has_value()) {
+                return std::unexpected(tileset_json.error());
+            }
+            auto texture_path =
+                loader_path.parent_path().parent_path() / "textures" / (*tileset_json)->at("image").get<std::string>();
+            auto texture = AssetStore::load<graphics::Texture>(texture_path);
+            if (!texture.has_value()) {
+                return std::unexpected(texture.error());
+            }
+            auto tileset = std::make_shared<Tileset>(*texture,
+                                                     glm::ivec2{
+                                                         (*tileset_json)->at("tilewidth").get<int>(),
+                                                         (*tileset_json)->at("tileheight").get<int>(),
+                                                     },
+                                                     (*tileset_json)->at("columns").get<std::size_t>(),
+                                                     (*tileset_json)->at("spacing").get<std::size_t>(),
+                                                     (*tileset_json)->at("margin").get<std::size_t>());
 
             tilesets.push_back(tileset);
 
-            auto tile_count = tileset_json->at("tilecount").get<std::size_t>();
+            auto tile_count = (*tileset_json)->at("tilecount").get<std::size_t>();
 
             for (auto i = first_gid; i <= first_gid + tile_count; i++) {
                 tileset_gid_map[i] = tileset;

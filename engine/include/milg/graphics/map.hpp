@@ -53,7 +53,7 @@ namespace milg {
     public:
         class Loader : public Asset::Loader {
         public:
-            std::shared_ptr<void> load(std::ifstream &stream);
+            auto load(std::ifstream &stream) -> LoadResult<void> override;
         };
 
         typedef std::size_t Id;

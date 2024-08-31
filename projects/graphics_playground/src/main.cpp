@@ -97,10 +97,10 @@ public:
             .mag_filter = VK_FILTER_NEAREST,
         };
 
-        this->albedo_texture   = AssetStore::load<Texture>("textures/map.png");
-        this->emissive_texture = AssetStore::load<Texture>("textures/map_emissive.png");
-        this->noise_texture    = AssetStore::load<Texture>("textures/noise.png");
-        this->light_texture    = AssetStore::load<Texture>("textures/light.png");
+        this->albedo_texture   = *AssetStore::load<Texture>("textures/map.png");
+        this->emissive_texture = *AssetStore::load<Texture>("textures/map_emissive.png");
+        this->noise_texture    = *AssetStore::load<Texture>("textures/noise.png");
+        this->light_texture    = *AssetStore::load<Texture>("textures/light.png");
 
         this->sprite_batch = SpriteBatch::create(context, albedo_buffer->format(), 10000);
 

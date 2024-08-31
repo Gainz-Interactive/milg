@@ -11,7 +11,7 @@ namespace milg {
 } // namespace milg
 
 namespace milg {
-    std::shared_ptr<void> Asset::Loader::load(std::ifstream &stream) {
+    auto Asset::Loader::load(std::ifstream &stream) -> LoadResult<void> {
         return std::make_shared<Bytes>(this->read_stream(stream));
     }
 
@@ -37,7 +37,7 @@ namespace milg {
         this->path = path;
     }
 
-    std::shared_ptr<void> Asset::JsonLoader::load(std::ifstream &stream) {
+    auto Asset::JsonLoader::load(std::ifstream &stream) -> LoadResult<void> {
         auto json = std::make_shared<nlohmann::json>(nullptr);
 
         stream >> *json;

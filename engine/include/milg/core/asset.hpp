@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <expected>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -10,11 +11,13 @@
 #include <typeindex>
 
 namespace milg {
+    template <typename T> using LoadResult = std::expected<std::shared_ptr<T>, asset_load_error>;
+
     class Asset {
     public:
         class Loader {
         public:
-            virtual std::shared_ptr<void> load(std::ifstream &stream);
+            virtual auto load(std::ifstream &stream) -> LoadResult<void>;
 
         protected:
             const std::filesystem::path &get_current_path();
@@ -30,7 +33,7 @@ namespace milg {
 
         class JsonLoader : public Loader {
         public:
-            std::shared_ptr<void> load(std::ifstream &stream);
+            auto load(std::ifstream &stream) -> LoadResult<void> override;
         };
     };
 
@@ -38,7 +41,7 @@ namespace milg {
     public:
         static void add_search_path(const std::filesystem::path &path);
 
-        template <typename T> static std::shared_ptr<T> load(const std::filesystem::path &path) {
+        template <typename T> static auto load(const std::filesystem::path &path) -> LoadResult<T> {
             if (auto iter = AssetStore::assets.find(path); iter != AssetStore::assets.end()) {
                 return std::static_pointer_cast<T>(iter->second);
             }
@@ -48,34 +51,28 @@ namespace milg {
             if (auto iter = AssetStore::loaders.find(std::type_index(typeid(T))); iter != loaders.end()) {
                 loader = iter->second;
             } else {
-                throw invalid_asset_type_error();
+                return std::unexpected(asset_load_error::invalid_type);
             }
 
             MILG_DEBUG("Loading {}…", path.string());
 
             for (const auto &search_path : AssetStore::search_paths) {
-                try {
-                    auto          current_path = search_path / path;
-                    std::ifstream stream(current_path, std::ios::binary | std::ios::in);
-                    if (!stream.is_open()) {
-                        throw file_not_found_error(path);
-                    }
-
-                    loader->set_current_path(current_path);
-
-                    auto data = loader->load(stream);
-
-                    assets.insert({path, data});
-
-                    return std::static_pointer_cast<T>(data);
-                } catch (const milg::file_not_found_error &) {
+                auto          current_path = search_path / path;
+                std::ifstream stream(current_path, std::ios::binary | std::ios::in);
+                if (!stream.is_open()) {
                     continue;
+                }
+
+                loader->set_current_path(current_path);
+
+                if (auto result = loader->load(stream); result.has_value()) {
+                    assets.insert({path, *result});
+
+                    return std::static_pointer_cast<T>(*result);
                 }
             }
 
-            throw file_not_found_error(path);
-
-            return nullptr;
+            return std::unexpected(asset_load_error::file_not_found);
         }
         static void unload_all();
 
