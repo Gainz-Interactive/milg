@@ -478,7 +478,7 @@ namespace milg::graphics {
     Texture::Loader::Loader(std::weak_ptr<VulkanContext> ctx) : ctx(ctx) {
     }
 
-    std::shared_ptr<void> Texture::Loader::load(std::ifstream &stream) {
+    auto Texture::Loader::load(std::ifstream &stream) -> milg::LoadResult<void> {
         const TextureCreateInfo texture_info = {
             .format     = VK_FORMAT_R8G8B8A8_UNORM,
             .usage      = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_STORAGE_BIT,

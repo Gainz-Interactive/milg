@@ -147,21 +147,22 @@ namespace milg::graphics {
                                                            &descriptor_set);
 
         auto load_shader_module = [&](const std::string &shader_id) -> VkShaderModule {
+            VkShaderModule shader_module = VK_NULL_HANDLE;
+
             MILG_INFO("Loading shader module: {}", shader_id);
 
-            auto shader = AssetStore::load<Bytes>(shader_id);
+            if (auto shader = AssetStore::load<Bytes>(shader_id); shader.has_value()) {
+                const VkShaderModuleCreateInfo shader_module_info = {
+                    .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+                    .pNext    = nullptr,
+                    .flags    = 0,
+                    .codeSize = (*shader)->size(),
+                    .pCode    = reinterpret_cast<const uint32_t *>((*shader)->data()),
+                };
 
-            const VkShaderModuleCreateInfo shader_module_info = {
-                .sType    = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-                .pNext    = nullptr,
-                .flags    = 0,
-                .codeSize = shader->size(),
-                .pCode    = reinterpret_cast<const uint32_t *>(shader->data()),
-            };
-
-            VkShaderModule shader_module = VK_NULL_HANDLE;
-            VK_CHECK(m_context->device_table().vkCreateShaderModule(m_context->device(), &shader_module_info, nullptr,
-                                                                    &shader_module));
+                VK_CHECK(m_context->device_table().vkCreateShaderModule(m_context->device(), &shader_module_info,
+                                                                        nullptr, &shader_module));
+            }
 
             return shader_module;
         };

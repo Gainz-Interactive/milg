@@ -33,7 +33,7 @@ namespace milg::graphics {
 
             ~Loader() = default;
 
-            std::shared_ptr<void> load(std::ifstream &stream);
+            auto load(std::ifstream &stream) -> LoadResult<void> override;
 
         private:
             std::weak_ptr<VulkanContext> ctx;
