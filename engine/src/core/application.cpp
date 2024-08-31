@@ -238,7 +238,7 @@ namespace milg {
     }
 
     void Application::push_layer(Layer *layer) {
-        m_layers.emplace_back(layer);
+        m_layers.push_back(layer);
         layer->on_attach();
     }
 
